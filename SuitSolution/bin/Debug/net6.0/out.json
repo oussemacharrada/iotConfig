@@ -1,0 +1,28 @@
+{
+  "manifestVersion": 1,
+  "manifestSequenceNumber": 1,
+  "components": [
+    {
+      "install-id": [
+        "00"
+      ],
+      "vendorId": "0ad7d47dfe837cbe80b400c04fd430c8",
+      "classId": "78b6bb1ffee77cbe80b400c04fd430c8",
+      "file": "firmware/0",
+      "uri": "coap://[fdea:dbee:f::1]/0",
+      "bootable": true,
+      "offset": 16384
+    },
+    {
+      "install-id": [
+        "00"
+      ],
+      "vendorId": "0ad7d47dfe837cbe80b400c04fd430c8",
+      "classId": "78b6bb1ffee77cbe80b400c04fd430c8",
+      "file": "firmware/1",
+      "uri": "coap://[fdea:dbee:f::1]/1",
+      "bootable": true,
+      "offset": 532480
+    }
+  ]
+}

@@ -1,0 +1,420 @@
+{
+  "version": 3,
+  "targets": {
+    "net6.0": {
+      "BouncyCastle/1.8.9": {
+        "type": "package",
+        "compile": {
+          "lib/BouncyCastle.Crypto.dll": {}
+        },
+        "runtime": {
+          "lib/BouncyCastle.Crypto.dll": {}
+        }
+      },
+      "CommandLineParser/2.9.1": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/CommandLine.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/CommandLine.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Dahomey.Cbor/1.20.1": {
+        "type": "package",
+        "dependencies": {
+          "System.IO.Pipelines": "6.0.3"
+        },
+        "compile": {
+          "lib/net6.0/Dahomey.Cbor.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/Dahomey.Cbor.dll": {}
+        }
+      },
+      "Newtonsoft.Json/13.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "PeterO.Cbor/4.5.2": {
+        "type": "package",
+        "dependencies": {
+          "PeterO.Numbers": "1.8.2",
+          "PeterO.URIUtility": "1.0.0"
+        },
+        "compile": {
+          "lib/netstandard1.0/CBOR.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard1.0/CBOR.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "PeterO.Numbers/1.8.2": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard1.0/Numbers.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard1.0/Numbers.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "PeterO.URIUtility/1.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard1.0/URIUtility.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard1.0/URIUtility.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "System.Formats.Cbor/7.0.0-rc.1.22426.10": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/System.Formats.Cbor.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/System.Formats.Cbor.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net6.0/_._": {}
+        }
+      },
+      "System.IO.Pipelines/6.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/System.IO.Pipelines.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/System.IO.Pipelines.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/netcoreapp3.1/_._": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "BouncyCastle/1.8.9": {
+      "sha512": "axnBgvdD5n+FnEG6efk/tfKuMFru7R/EoISH9zjh319yb3HD24TEHSAbNN/lTRT2ulOGRxDgOsCjkuk08iwWPg==",
+      "type": "package",
+      "path": "bouncycastle/1.8.9",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "bouncycastle.1.8.9.nupkg.sha512",
+        "bouncycastle.nuspec",
+        "lib/BouncyCastle.Crypto.dll"
+      ]
+    },
+    "CommandLineParser/2.9.1": {
+      "sha512": "OE0sl1/sQ37bjVsPKKtwQlWDgqaxWgtme3xZz7JssWUzg5JpMIyHgCTY9MVMxOg48fJ1AgGT3tgdH5m/kQ5xhA==",
+      "type": "package",
+      "path": "commandlineparser/2.9.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "CommandLine20.png",
+        "License.md",
+        "README.md",
+        "commandlineparser.2.9.1.nupkg.sha512",
+        "commandlineparser.nuspec",
+        "lib/net40/CommandLine.dll",
+        "lib/net40/CommandLine.xml",
+        "lib/net45/CommandLine.dll",
+        "lib/net45/CommandLine.xml",
+        "lib/net461/CommandLine.dll",
+        "lib/net461/CommandLine.xml",
+        "lib/netstandard2.0/CommandLine.dll",
+        "lib/netstandard2.0/CommandLine.xml"
+      ]
+    },
+    "Dahomey.Cbor/1.20.1": {
+      "sha512": "tajH2WyFyPfvbl4dR+YB85WAWE60kBT5vkpQJzRyUhVFLGBMcrKkRMvh778Toc/m/34bG6zNKZ+n/pq4mf0/mA==",
+      "type": "package",
+      "path": "dahomey.cbor/1.20.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "dahomey.cbor.1.20.1.nupkg.sha512",
+        "dahomey.cbor.nuspec",
+        "lib/net6.0/Dahomey.Cbor.dll",
+        "lib/net7.0/Dahomey.Cbor.dll",
+        "lib/netcoreapp3.1/Dahomey.Cbor.dll",
+        "lib/netstandard2.0/Dahomey.Cbor.dll"
+      ]
+    },
+    "Newtonsoft.Json/13.0.3": {
+      "sha512": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
+      "type": "package",
+      "path": "newtonsoft.json/13.0.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "README.md",
+        "lib/net20/Newtonsoft.Json.dll",
+        "lib/net20/Newtonsoft.Json.xml",
+        "lib/net35/Newtonsoft.Json.dll",
+        "lib/net35/Newtonsoft.Json.xml",
+        "lib/net40/Newtonsoft.Json.dll",
+        "lib/net40/Newtonsoft.Json.xml",
+        "lib/net45/Newtonsoft.Json.dll",
+        "lib/net45/Newtonsoft.Json.xml",
+        "lib/net6.0/Newtonsoft.Json.dll",
+        "lib/net6.0/Newtonsoft.Json.xml",
+        "lib/netstandard1.0/Newtonsoft.Json.dll",
+        "lib/netstandard1.0/Newtonsoft.Json.xml",
+        "lib/netstandard1.3/Newtonsoft.Json.dll",
+        "lib/netstandard1.3/Newtonsoft.Json.xml",
+        "lib/netstandard2.0/Newtonsoft.Json.dll",
+        "lib/netstandard2.0/Newtonsoft.Json.xml",
+        "newtonsoft.json.13.0.3.nupkg.sha512",
+        "newtonsoft.json.nuspec",
+        "packageIcon.png"
+      ]
+    },
+    "PeterO.Cbor/4.5.2": {
+      "sha512": "/yiIEuawE2v/DtR8oKit5YgpOSLiWCVo7K0SkHrKVzTqh79nkEa7BgmCZ7siWQkWpO5XY9T0+lVcuuOTuT19ag==",
+      "type": "package",
+      "path": "petero.cbor/4.5.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net20/CBOR.dll",
+        "lib/net20/CBOR.xml",
+        "lib/net40/CBOR.dll",
+        "lib/net40/CBOR.xml",
+        "lib/netstandard1.0/CBOR.dll",
+        "lib/netstandard1.0/CBOR.xml",
+        "petero.cbor.4.5.2.nupkg.sha512",
+        "petero.cbor.nuspec"
+      ]
+    },
+    "PeterO.Numbers/1.8.2": {
+      "sha512": "d+A5KLoWbwOTpvubPaGXLgCzANE00jXmsT+yneHwLe2OlobBBFLaIHyoDwmekuHM17z9hU++RF6mL+zZ2x69nA==",
+      "type": "package",
+      "path": "petero.numbers/1.8.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net20/Numbers.dll",
+        "lib/net20/Numbers.xml",
+        "lib/net40/Numbers.dll",
+        "lib/net40/Numbers.xml",
+        "lib/netstandard1.0/Numbers.dll",
+        "lib/netstandard1.0/Numbers.xml",
+        "petero.numbers.1.8.2.nupkg.sha512",
+        "petero.numbers.nuspec"
+      ]
+    },
+    "PeterO.URIUtility/1.0.0": {
+      "sha512": "fpRTBsYACMp7NvTECauYRomubWTC3vUNw4hMXdIedP8ctBGK6tea9HOJwE+qVzis6MZYkL3LIs8qeY3rc6Jdlw==",
+      "type": "package",
+      "path": "petero.uriutility/1.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net20/URIUtility.dll",
+        "lib/net20/URIUtility.xml",
+        "lib/net40/URIUtility.dll",
+        "lib/net40/URIUtility.xml",
+        "lib/netstandard1.0/URIUtility.dll",
+        "lib/netstandard1.0/URIUtility.xml",
+        "petero.uriutility.1.0.0.nupkg.sha512",
+        "petero.uriutility.nuspec"
+      ]
+    },
+    "System.Formats.Cbor/7.0.0-rc.1.22426.10": {
+      "sha512": "ITB6rc8fvYqCc2QU5CofZxM0tnrcI85LL37f7mu0A2zSoJ8WOawzxIxHI55E/+9020SmVnmcy0ZHKpyDWF0TGA==",
+      "type": "package",
+      "path": "system.formats.cbor/7.0.0-rc.1.22426.10",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Formats.Cbor.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net6.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Formats.Cbor.targets",
+        "lib/net462/System.Formats.Cbor.dll",
+        "lib/net462/System.Formats.Cbor.xml",
+        "lib/net6.0/System.Formats.Cbor.dll",
+        "lib/net6.0/System.Formats.Cbor.xml",
+        "lib/net7.0/System.Formats.Cbor.dll",
+        "lib/net7.0/System.Formats.Cbor.xml",
+        "lib/netstandard2.0/System.Formats.Cbor.dll",
+        "lib/netstandard2.0/System.Formats.Cbor.xml",
+        "system.formats.cbor.7.0.0-rc.1.22426.10.nupkg.sha512",
+        "system.formats.cbor.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    },
+    "System.IO.Pipelines/6.0.3": {
+      "sha512": "ryTgF+iFkpGZY1vRQhfCzX0xTdlV3pyaTTqRu2ETbEv+HlV7O6y7hyQURnghNIXvctl5DuZ//Dpks6HdL/Txgw==",
+      "type": "package",
+      "path": "system.io.pipelines/6.0.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/netcoreapp2.0/System.IO.Pipelines.targets",
+        "buildTransitive/netcoreapp3.1/_._",
+        "lib/net461/System.IO.Pipelines.dll",
+        "lib/net461/System.IO.Pipelines.xml",
+        "lib/net6.0/System.IO.Pipelines.dll",
+        "lib/net6.0/System.IO.Pipelines.xml",
+        "lib/netcoreapp3.1/System.IO.Pipelines.dll",
+        "lib/netcoreapp3.1/System.IO.Pipelines.xml",
+        "lib/netstandard2.0/System.IO.Pipelines.dll",
+        "lib/netstandard2.0/System.IO.Pipelines.xml",
+        "system.io.pipelines.6.0.3.nupkg.sha512",
+        "system.io.pipelines.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net6.0": [
+      "BouncyCastle >= 1.8.9",
+      "CommandLineParser >= 2.9.1",
+      "Dahomey.Cbor >= 1.20.1",
+      "Newtonsoft.Json >= 13.0.3",
+      "PeterO.Cbor >= 4.5.2",
+      "System.Formats.Cbor >= 7.0.0-rc.1.22426.10"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\ousama.charada\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\ousama.charada\\RiderProjects\\SuitSolution\\SuitSolution\\SuitSolution.csproj",
+      "projectName": "SuitSolution",
+      "projectPath": "C:\\Users\\ousama.charada\\RiderProjects\\SuitSolution\\SuitSolution\\SuitSolution.csproj",
+      "packagesPath": "C:\\Users\\ousama.charada\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\ousama.charada\\RiderProjects\\SuitSolution\\SuitSolution\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\ousama.charada\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net6.0"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net6.0": {
+        "targetAlias": "net6.0",
+        "dependencies": {
+          "BouncyCastle": {
+            "target": "Package",
+            "version": "[1.8.9, )"
+          },
+          "CommandLineParser": {
+            "target": "Package",
+            "version": "[2.9.1, )"
+          },
+          "Dahomey.Cbor": {
+            "target": "Package",
+            "version": "[1.20.1, )"
+          },
+          "Newtonsoft.Json": {
+            "target": "Package",
+            "version": "[13.0.3, )"
+          },
+          "PeterO.Cbor": {
+            "target": "Package",
+            "version": "[4.5.2, )"
+          },
+          "System.Formats.Cbor": {
+            "target": "Package",
+            "version": "[7.0.0-rc.1.22426.10, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
+      }
+    }
+  },
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'BouncyCastle 1.8.9' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "libraryId": "BouncyCastle",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    }
+  ]
+}

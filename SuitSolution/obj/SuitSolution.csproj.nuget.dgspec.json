@@ -1,0 +1,89 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\ousama.charada\\RiderProjects\\SuitSolution\\SuitSolution\\SuitSolution.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\ousama.charada\\RiderProjects\\SuitSolution\\SuitSolution\\SuitSolution.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\ousama.charada\\RiderProjects\\SuitSolution\\SuitSolution\\SuitSolution.csproj",
+        "projectName": "SuitSolution",
+        "projectPath": "C:\\Users\\ousama.charada\\RiderProjects\\SuitSolution\\SuitSolution\\SuitSolution.csproj",
+        "packagesPath": "C:\\Users\\ousama.charada\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\ousama.charada\\RiderProjects\\SuitSolution\\SuitSolution\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\ousama.charada\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "dependencies": {
+            "BouncyCastle": {
+              "target": "Package",
+              "version": "[1.8.9, )"
+            },
+            "CommandLineParser": {
+              "target": "Package",
+              "version": "[2.9.1, )"
+            },
+            "Dahomey.Cbor": {
+              "target": "Package",
+              "version": "[1.20.1, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            },
+            "PeterO.Cbor": {
+              "target": "Package",
+              "version": "[4.5.2, )"
+            },
+            "System.Formats.Cbor": {
+              "target": "Package",
+              "version": "[7.0.0-rc.1.22426.10, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
