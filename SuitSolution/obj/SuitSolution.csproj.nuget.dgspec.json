@@ -52,9 +52,17 @@
               "target": "Package",
               "version": "[1.20.1, )"
             },
+            "Microsoft.NET.Test.Sdk": {
+              "target": "Package",
+              "version": "[16.5.0-preview-20191115-01, )"
+            },
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.3, )"
+            },
+            "NuGet.Frameworks": {
+              "target": "Package",
+              "version": "[6.5.0, )"
             },
             "PeterO.Cbor": {
               "target": "Package",
@@ -63,6 +71,10 @@
             "System.Formats.Cbor": {
               "target": "Package",
               "version": "[7.0.0-rc.1.22426.10, )"
+            },
+            "xunit": {
+              "target": "Package",
+              "version": "[2.5.1-pre.26, )"
             }
           },
           "imports": [

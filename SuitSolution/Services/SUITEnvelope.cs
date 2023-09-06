@@ -10,7 +10,6 @@ using SuitSolution.Services;
 
 public class SUITEnvelope : SUITManifestDict
 {
-    // Fields
     public SUITBWrapField<COSEList> auth { get; set; }
     public SUITBWrapField<SUITManifest> manifest { get; set; }
     public SUITBWrapField<SUITSequence> deres { get; set; }
@@ -22,7 +21,6 @@ public class SUITEnvelope : SUITManifestDict
     public SUITBWrapField<SUITText> text { get; set; }
     public SUITBytes coswid { get; set; }
 
-    // Fields for severable handling
     private readonly HashSet<string> severableFields = new HashSet<string>
         { "deres", "fetch", "install", "text", "coswid" };
 
@@ -60,60 +58,20 @@ public class SUITEnvelope : SUITManifestDict
     }
 
 
-    // Serialization methods
-    public CBORObject ToSUIT(string digestAlg)
+   /* public CBORObject ToSUIT(string digestAlg)
     {
-        CBORObject cborObject = base.ToSUIT();
+        CBORObject cborObject = CBORObject.NewMap();
 
         if (auth != null)
         {
-            cborObject["auth"] = CBORObject.FromObject(auth);
+            cborObject["auth"] = CBORObject.FromObject(auth.ToSUIT());
         }
 
         if (manifest != null)
         {
-            cborObject["manifest"] = CBORObject.FromObject(manifest);
+            cborObject["manifest"] = CBORObject.FromObject(manifest.ToSUIT());
         }
 
-        if (deres != null)
-        {
-            cborObject["deres"] = CBORObject.FromObject(deres);
-        }
-
-        if (fetch != null)
-        {
-            cborObject["fetch"] = CBORObject.FromObject(fetch);
-        }
-
-        if (install != null)
-        {
-            cborObject["install"] = CBORObject.FromObject(install);
-        }
-
-        if (validate != null)
-        {
-            cborObject["validate"] = CBORObject.FromObject(validate);
-        }
-
-        if (load != null)
-        {
-            cborObject["load"] = CBORObject.FromObject(load);
-        }
-
-        if (run != null)
-        {
-            cborObject["run"] = CBORObject.FromObject(run);
-        }
-
-        if (text != null)
-        {
-            cborObject["text"] = CBORObject.FromObject(text);
-        }
-
-        if (coswid != null)
-        {
-            cborObject["coswid"] = CBORObject.FromObject(coswid);
-        }
 
         foreach (string fieldName in severableFields)
         {
@@ -122,7 +80,7 @@ public class SUITEnvelope : SUITManifestDict
                 var field = GetField(fieldName);
                 if (field != null)
                 {
-                    var cborField = CBORObject.FromObject(field);
+                    var cborField = CBORObject.FromObject(field.ToSUIT());
                     var digest = HashAlgorithm.Create(digestAlgorithms[digestAlg].ToString());
                     var cborDigest = CBORObject.FromObject(digest.ComputeHash(cborField.EncodeToBytes()));
                     if (cborDigest.Count < cborField.Count)
@@ -136,8 +94,8 @@ public class SUITEnvelope : SUITManifestDict
         return cborObject;
     }
 
+*/
 
-    // Method for creating an instance of the class from CBOR data
     public static SUITEnvelope FromSUIT(CBORObject cborObject)
     {
         var authTagged1 = cborObject.ContainsKey(2);
@@ -225,7 +183,6 @@ Console.WriteLine(envelope.ToString());
             debugText.AppendLine($"{prefix}Manifest: ");
         }
 
-        // ... add more properties as needed ...
 
         return debugText.ToString();
     }

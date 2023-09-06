@@ -7,24 +7,20 @@ using PeterO.Cbor;
 
 namespace SuitSolution.Services
 {
-    // SUITComponents class
     public class SUITComponents
     {
-        // Properties for fields
         [JsonPropertyName("load-components")]
         public List<SUITComponentId> LoadComponents { get; set; }
 
         [JsonPropertyName("install-components")]
         public List<SUITComponentId> InstallComponents { get; set; }
 
-        // Constructor
         public SUITComponents()
         {
             LoadComponents = new List<SUITComponentId>();
             InstallComponents = new List<SUITComponentId>();
         }
 
-        // Serialization methods
         public string ToJson()
         {
             var options = new JsonSerializerOptions
@@ -39,7 +35,6 @@ namespace SuitSolution.Services
             return JsonSerializer.Deserialize<SUITComponents>(json);
         }
 
-        // Method for converting to SUIT format
         public CBORObject ToSUIT()
         {
             var cborObject = CBORObject.NewMap();
@@ -57,7 +52,7 @@ namespace SuitSolution.Services
             return cborObject;
         }
 
-        public static SUITComponents FromSUIT(CBORObject cborObject)
+        public SUITComponents FromSUIT(CBORObject cborObject)
         {
             return new SUITComponents
             {

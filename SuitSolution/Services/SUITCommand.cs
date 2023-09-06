@@ -6,10 +6,8 @@ using PeterO.Cbor;
 
 namespace SuitSolution.Services
 {
-    // SUITCommand class
     public class SUITCommand
     {
-        // Properties for fields
         [JsonPropertyName("sequence-number")]
         public int SequenceNumber { get; set; }
 
@@ -19,13 +17,16 @@ namespace SuitSolution.Services
         [JsonPropertyName("args")]
         public List<CBORObject> Args { get; set; }
 
-        // Constructor
         public SUITCommand()
         {
             Args = new List<CBORObject>();
         }
 
-        // Serialization methods
+        public SUITCommand(SUITComponentId cid, string name, object jarg)
+        {
+            throw new NotImplementedException();
+        }
+
         public string ToJson()
         {
             var options = new JsonSerializerOptions
@@ -40,7 +41,6 @@ namespace SuitSolution.Services
             return JsonSerializer.Deserialize<SUITCommand>(json);
         }
 
-        // Method for converting to SUIT format
         public CBORObject ToSUIT()
         {
             var cborObject = CBORObject.NewMap();

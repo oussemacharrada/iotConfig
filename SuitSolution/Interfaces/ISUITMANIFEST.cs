@@ -4,7 +4,6 @@ namespace SuitSolution.Interfaces;
 
 public interface ISUITSequenceItem
 {
-    // Common methods and properties for items in SUITSequence
     byte[] ToSUIT();
     void FromSUIT(byte[] data);
     string ToDebug(int indent);
@@ -29,7 +28,6 @@ public interface ISUITComponentText : ISUITSequenceItem
 }
 public interface ISUITSequenceComponentReset : ISUITSequenceItem
 {
-    // No additional members needed for this interface
 }
 
 

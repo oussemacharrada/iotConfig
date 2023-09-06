@@ -8,14 +8,12 @@ public class COSETagChoice
     public int Tag { get; set; }
     public CBORObject Value { get; set; }
 
-    // Constructor
     public COSETagChoice()
     {
         Tag = 0;
         Value = CBORObject.Null;
     }
 
-    // Serialization methods
     /*public string ToJson()
     {
         var options = new JsonSerializerOptions
@@ -30,8 +28,6 @@ public class COSETagChoice
         return JsonSerializer.Deserialize<COSETagChoice>(json);
     }
 */
-    // Method for converting to SUIT format
-    // Method for converting to SUIT format
     public CBORObject ToSUIT()
     {
         CBORObject cborMap = CBORObject.NewMap();
@@ -39,7 +35,6 @@ public class COSETagChoice
         return cborMap;
     }
 
-// Method for converting from SUIT format
     public static COSETagChoice FromSUIT(byte[] suitBytes)
     {
         CBORObject cborMap = CBORObject.DecodeFromBytes(suitBytes);

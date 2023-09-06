@@ -1,48 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using PeterO.Cbor;
+using SuitSolution.Services.SuitSolution.Services;
 
 namespace SuitSolution.Services
 {
-    // SUITCommon class
-    public class SUITCommon
+    public class SUITCommon : ISUITConvertible
     {
-        // Properties for fields
-        [JsonPropertyName("sequence")]
         public int Sequence { get; set; }
-
-        [JsonPropertyName("install")]
         public List<int> Install { get; set; }
-
-        [JsonPropertyName("validate")]
         public List<int> Validate { get; set; }
 
-        // Constructor
-        public SUITCommon()
-        {
-            Install = new List<int>();
-            Validate = new List<int>();
-        }
-
-        // Serialization methods
-        public string ToJson()
-        {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-            return JsonSerializer.Serialize(this, options);
-        }
-
-        public static SUITCommon FromJson(string json)
-        {
-            return JsonSerializer.Deserialize<SUITCommon>(json);
-        }
-
-        // Method for converting to SUIT format
-        public CBORObject ToSUIT()
+        public CBORObject ToCbor()
         {
             var cborObject = CBORObject.NewMap();
             cborObject.Add("sequence", Sequence);
@@ -69,15 +38,157 @@ namespace SuitSolution.Services
 
             return cborObject;
         }
-
-        public static SUITCommon FromSUIT(CBORObject cborObject)
+        public List<object> ToSUIT()
         {
-            return new SUITCommon
+            var suitList = new List<object>
             {
-                Sequence = cborObject["sequence"].AsInt32(),
-                Install = cborObject["install"].Values.Select(item => item.AsInt32()).ToList(),
-                Validate = cborObject["validate"].Values.Select(item => item.AsInt32()).ToList()
+                Sequence
             };
+
+            if (Install != null)
+            {
+                var installList = Install.Cast<object>().ToList();
+                suitList.Add(installList);
+            }
+            else
+            {
+                suitList.Add(null);
+            }
+
+            if (Validate != null)
+            {
+                var validateList = Validate.Cast<object>().ToList();
+                suitList.Add(validateList);
+            }
+            else
+            {
+                suitList.Add(null);
+            }
+
+            return suitList;
+        }
+
+        public void FromSUIT(List<Object> suitList)
+        {
+            if (suitList == null || suitList.Count < 1)
+            {
+                throw new ArgumentException("Invalid SUIT list.");
+            }
+
+            Sequence = (int)suitList[0];
+
+            if (suitList.Count > 1 && suitList[1] != null)
+            {
+                Install = ((List<object>)suitList[1]).Cast<int>().ToList();
+            }
+            else
+            {
+                Install = null;
+            }
+
+            if (suitList.Count > 2 && suitList[2] != null)
+            {
+                Validate = ((List<object>)suitList[2]).Cast<int>().ToList();
+            }
+            else
+            {
+                Validate = null;
+            }
+        }
+
+
+        public void FromCBOR(CBORObject cborObject)
+        {
+            if (cborObject == null || cborObject.Type != CBORType.Map)
+            {
+                throw new ArgumentException("Invalid CBOR object or type.");
+            }
+
+            Sequence = cborObject["sequence"].AsInt32();
+
+            if (cborObject.ContainsKey("install"))
+            {
+                Install = new List<int>();
+                foreach (var item in cborObject["install"].Values)
+                {
+                    Install.Add(item.AsInt32());
+                }
+            }
+            else
+            {
+                Install = null;
+            }
+
+            if (cborObject.ContainsKey("validate"))
+            {
+                Validate = new List<int>();
+                foreach (var item in cborObject["validate"].Values)
+                {
+                    Validate.Add(item.AsInt32());
+                }
+            }
+            else
+            {
+                Validate = null;
+            }
+        }
+        public Dictionary<object, object> ToSUITDict()
+        {
+            var suitDict = new Dictionary<object, object>
+            {
+                { "sequence", Sequence }
+            };
+
+            if (Install != null)
+            {
+                suitDict.Add("install", Install);
+            }
+            else
+            {
+                suitDict.Add("install", null);
+            }
+
+            if (Validate != null)
+            {
+                suitDict.Add("validate", Validate);
+            }
+            else
+            {
+                suitDict.Add("validate", null);
+            }
+
+            return suitDict;
+        }
+
+        public void FromSUITDict(Dictionary<object, object> suitDict)
+        {
+            if (suitDict == null)
+            {
+                throw new ArgumentNullException(nameof(suitDict));
+            }
+
+            if (suitDict.TryGetValue("sequence", out var sequenceValue) && sequenceValue is int sequence)
+            {
+                Sequence = sequence;
+            }
+
+            if (suitDict.TryGetValue("install", out var installValue) && installValue is List<object> installList)
+            {
+                Install = installList.OfType<int>().ToList();
+            }
+            else
+            {
+                Install = null;
+            }
+
+            if (suitDict.TryGetValue("validate", out var validateValue) && validateValue is List<object> validateList)
+            {
+                Validate = validateList.OfType<int>().ToList();
+            }
+            else
+            {
+                Validate = null;
+            }
         }
     }
 }

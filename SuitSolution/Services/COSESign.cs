@@ -10,7 +10,6 @@ public class COSESign
     public CBORObject Payload { get; set; }
     public CBORObject Signature { get; set; }
 
-    // Constructor
     public COSESign()
     {
         Protected = CBORObject.NewMap();
@@ -19,7 +18,6 @@ public class COSESign
         Signature = CBORObject.Null;
     }
 
-    // Serialization methods
     /* public string ToJson()
     {
         var options = new JsonSerializerOptions
@@ -34,7 +32,6 @@ public class COSESign
         return JsonSerializer.Deserialize<COSESign>(json);
     }
 */
-    // Method for converting to SUIT format
     public CBORObject ToSUIT()
     {
         CBORObject cborMap = CBORObject.NewMap();
@@ -47,7 +44,6 @@ public class COSESign
         return cborMap;
     }
 
-    // Method for converting from SUIT format
     public static COSESign FromSUIT(byte[] suitBytes)
     {
         CBORObject cborMap = CBORObject.DecodeFromBytes(suitBytes);

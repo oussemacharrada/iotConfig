@@ -7,20 +7,15 @@ using PeterO.Cbor;
 
 namespace SuitSolution.Services
 {
-    // COSE_Sign1 class
     public class COSE_SIGN1
     {
-        // COSE Headers
         public CBORObject ProtectedHeaders { get; set; }
         public CBORObject UnprotectedHeaders { get; set; }
 
-        // Payload
         public byte[] Payload { get; set; }
 
-        // Signature
         public byte[] Signature { get; set; }
 
-        // Constructor
         public COSE_SIGN1(CBORObject protectedHeaders, CBORObject unprotectedHeaders, byte[] payload, byte[] signature)
         {
             ProtectedHeaders = protectedHeaders;
@@ -29,7 +24,6 @@ namespace SuitSolution.Services
             Signature = signature;
         }
 
-        // Serialize COSE_SIGN1 to CBOR
         public CBORObject EncodeToCBOR()
         {
             var coseMap = CBORObject.NewMap();
@@ -51,7 +45,7 @@ namespace SuitSolution.Services
         }
         public static COSE_SIGN1 DecodeFromCBOR(CBORObject cbor)
         {
-            var coseSign1 = new COSE_SIGN1(null, null, null, null); // Create an instance with default values
+            var coseSign1 = new COSE_SIGN1(null, null, null, null);
 
             if (cbor.Type == CBORType.Map)
             {

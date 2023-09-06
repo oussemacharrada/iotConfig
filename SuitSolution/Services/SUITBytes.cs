@@ -5,26 +5,22 @@ using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 namespace SuitSolution.Services
 {
-    // SUITBytes class
     public class SUITBytes
     {
         [JsonPropertyName("bytes")]
         public byte[] Bytes { get; set; }
 
-        // Default constructor
         public SUITBytes()
         {
-            Bytes = new byte[0]; // Initialize with an empty byte array
+            Bytes = new byte[0]; 
         }
 
-        // Constructor
         public SUITBytes(byte[] bytes)
         {
             Bytes = bytes;
         }
 
 
-        // Serialization methods
       /*  public string ToJson()
         {
             var options = new JsonSerializerOptions
@@ -39,13 +35,11 @@ namespace SuitSolution.Services
             return JsonSerializer.Deserialize<SUITBytes>(json);
         }
 */
-        // Method for converting to SUIT format
         public CBORObject ToSUIT()
         {
             return CBORObject.FromObject(Bytes);
         }
 
-        // Method for converting from SUIT format
         public static SUITBytes FromSUIT(CBORObject suitBytes)
         {
 

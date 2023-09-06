@@ -1,57 +1,101 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using PeterO.Cbor;
+using SuitSolution.Services.SuitSolution.Services;
 
-public class COSEList
+namespace SuitSolution.Services
 {
-    public CBORObject[] ListData { get; set; }
-
-    // Constructor
-    public COSEList()
+    public class COSEList : ISUITConvertible
     {
-        ListData = Array.Empty<CBORObject>();
-    }
+        [JsonIgnore]
+        public CBORObject[] ListData { get; set; }
 
-    // Serialization methods
-    public string ToJson()
-    {
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true
-        };
-        return JsonSerializer.Serialize(this, options);
-    }
-
-    public static COSEList? FromJson(string json)
-    {
-        return JsonSerializer.Deserialize<COSEList>(json);
-    }
-
-    // Method for converting to SUIT format
-    public CBORObject ToSUIT()
-    {
-        CBORObject cborList = CBORObject.NewArray();
-        foreach (var data in ListData)
-        {
-            cborList.Add(data);
-        }
-        return cborList;
-    }
-
-    // Method for converting from SUIT format
-    public static COSEList FromSUIT(byte[] suitBytes)
-    {
-        CBORObject cborList = CBORObject.DecodeFromBytes(suitBytes);
-        var coseList = new COSEList
-        {
-            ListData = new CBORObject[cborList.Count]
-        };
-
-        for (int i = 0; i < cborList.Count; i++)
-        {
-            coseList.ListData[i] = cborList[i];
+        public COSEList()
+        { 
+            ListData = Array.Empty<CBORObject>();
         }
 
-        return coseList;
+        public string ToJson()
+        {
+            var jsonList = new List<string>();
+
+            foreach (var cborObject in ListData)
+            {
+                jsonList.Add(cborObject.ToJSONString());
+            }
+
+            return JsonSerializer.Serialize(jsonList);
+        }
+
+
+        public COSEList FromJson(string json)
+        {
+            List<CBORObject> listData = CBORObject.FromJSONString(json).Values.ToList();
+            ListData = listData.ToArray();
+            return this;
+        }
+
+
+
+
+
+
+
+        public List<object> ToSUIT()
+        {
+            var suitList = new List<object>();
+            foreach (var data in ListData)
+            {
+                if (data.Type == CBORType.TextString)
+                {
+                    suitList.Add(data.AsString());
+                }
+                else if (data.Type == CBORType.Integer) 
+                {
+                    suitList.Add((int)data.AsInt64()); 
+                }
+                else if (data.Type == CBORType.Boolean)
+                {
+                    suitList.Add(data.AsBoolean());
+                }
+                else if (data.IsNull)
+                {
+                    suitList.Add(null);
+                }
+            }
+            return suitList;
+        }
+
+      
+        public void FromSUIT(List<object> suitList)
+        {
+            var cborList = new List<CBORObject>();
+            foreach (var item in suitList)
+            {
+                if (item is string str)
+                {
+                    cborList.Add(CBORObject.FromObject(str));
+                }
+                else if (item is int intValue)
+                {
+                    cborList.Add(CBORObject.FromObject(intValue));
+                }
+                else if (item is double doubleValue)
+                {
+                    cborList.Add(CBORObject.FromObject(doubleValue));
+                }
+                else if (item is bool boolValue)
+                {
+                    cborList.Add(CBORObject.FromObject(boolValue));
+                }
+                else if (item == null)
+                {
+                    cborList.Add(CBORObject.Null);
+                }
+            }
+            ListData = cborList.ToArray();
+        }
     }
 }

@@ -1,120 +1,122 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using PeterO.Cbor;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using PeterO.Cbor;
 using SuitSolution.Interfaces;
 using SuitSolution.Services;
+using SuitSolution.Services.SuitSolution.Services;
 
-public class SUITManifestDict
+public class SUITManifestDict : ISUITConvertible
+{
+    [JsonPropertyName("version")]
+    public int Version { get; set; }
+
+    [JsonPropertyName("sequence")]
+    public int Sequence { get; set; }
+
+    [JsonPropertyName("dependencies")]
+    public List<SUITDependency> Dependencies { get; set; }
+
+    [JsonPropertyName("dependenciesWrap")]
+    public List<SUITBWrapField<COSEList>> DependenciesWrap { get; set; }
+
+    [JsonPropertyName("componentsWrap")]
+    public List<SUITBWrapField<COSEList>> ComponentsWrap { get; set; }
+
+    [JsonPropertyName("manifestsWrap")]
+    public List<SUITBWrapField<SUITBWrapField<CoseTaggedAuth>>> ManifestsWrap { get; set; }
+
+    public SUITManifestDict()
     {
-        // Properties for fields
-        [JsonPropertyName("version")]
-        public int Version { get; set; }
-
-        [JsonPropertyName("sequence")]
-        public int Sequence { get; set; }
-
-        [JsonPropertyName("dependencies")]
-        public List<SUITDependency> Dependencies { get; set; }
-
-        // Constructors
-        public SUITManifestDict()
-        {
-            Dependencies = new List<SUITDependency>();
-        }
-
-        // Method for converting to debug string
-        public string ToDebugString()
-        {
-            return $"Version: {Version}, Sequence: {Sequence}, Dependencies Count: {Dependencies.Count}";
-        }
-
-        // Serialization methods
-        public string ToJson()
-        {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-            return JsonSerializer.Serialize(this, options);
-        }
-
-        public static SUITManifestDict FromJson(string json)
-        {
-            return JsonSerializer.Deserialize<SUITManifestDict>(json);
-        }
-
-        // Method for converting to SUIT format
-        public List<SUITBWrapField<COSEList>> dependencies { get; set; }
-        public List<SUITBWrapField<COSEList>> components { get; set; }
-        public List<SUITBWrapField<SUITBWrapField<CoseTaggedAuth>>> manifests { get; set; }
-
-        public CBORObject ToSUIT()
-        {
-            CBORObject cborObject = CBORObject.NewMap();
-            cborObject.Add("dependencies", CBORObject.NewArray().Add(dependencies.Select(dep => dep.ToSUIT()).ToArray()));
-            cborObject.Add("components", CBORObject.NewArray().Add(components.Select(comp => comp.ToSUIT()).ToArray()));
-            cborObject.Add("manifests", CBORObject.NewArray().Add(manifests.Select(manifest => manifest.ToSUIT()).ToArray()));
-            return cborObject;
-        }
-
-       /* public static SUITManifestDict FromSUIT(CBORObject cborObject)
-        {
-            return new SUITManifestDict
-            {
-                dependencies = cborObject["dependencies"].Values.Select(dep => SUITBWrapField<COSEList>.FromSUIT(dep.EncodeToBytes())).ToList(),
-                components = cborObject["components"].Values.Select(comp => SUITBWrapField<COSEList>.FromSUIT(comp.EncodeToBytes())).ToList(),
-                manifests = cborObject["manifests"].Values.Select(manifest => SUITBWrapField<SUITBWrapField<CoseTaggedAuth>>.FromSUIT(manifest.EncodeToBytes())).ToList()
-            };
-        }*/
+        Dependencies = new List<SUITDependency>();
+        DependenciesWrap = new List<SUITBWrapField<COSEList>>();
+        ComponentsWrap = new List<SUITBWrapField<COSEList>>();
+        ManifestsWrap = new List<SUITBWrapField<SUITBWrapField<CoseTaggedAuth>>>();
     }
 
-    // SUITDependency class
-  
-
-    /* Main class for testing
-    public class Program
+    public byte[] EncodeToBytes()
     {
-        public static void Main(string[] args)
+        string json = JsonSerializer.Serialize(this);
+
+        return Encoding.UTF8.GetBytes(json);
+    }
+
+    public void DecodeFromBytes(byte[] bytes)
+    {
+        string json = Encoding.UTF8.GetString(bytes);
+
+        SUITManifestDict decodedObject = JsonSerializer.Deserialize<SUITManifestDict>(json);
+
+        Version = decodedObject.Version;
+        Sequence = decodedObject.Sequence;
+        Dependencies = decodedObject.Dependencies;
+        DependenciesWrap = decodedObject.DependenciesWrap;
+        ComponentsWrap = decodedObject.ComponentsWrap;
+        ManifestsWrap = decodedObject.ManifestsWrap;
+    }
+
+    public void AddRange(IEnumerable<byte[]> items)
+    {
+        foreach (var item in items)
         {
-            // Create an instance of SUITManifestDict
-            var manifestDict = new SUITManifestDict
-            {
-                Version = 1,
-                Sequence = 123
-            };
+            var depWrap = new SUITBWrapField<COSEList>();
+            depWrap.DecodeFromBytes(item);
 
-            // Add a sample dependency
-            manifestDict.Dependencies.Add(new SUITDependency
-            {
-                Digest = "1234567890",
-                Prefix = "abcdef"
-            });
-
-            // Convert to debug string
-            string debugString = manifestDict.ToDebugString();
-            Console.WriteLine(debugString);
-
-            // Serialize to JSON
-            string jsonString = manifestDict.ToJson();
-            Console.WriteLine(jsonString);
-
-            // Deserialize from JSON
-            SUITManifestDict deserializedManifestDict = SUITManifestDict.FromJson(jsonString);
-            Console.WriteLine($"Deserialized Version: {deserializedManifestDict.Version}");
-            Console.WriteLine($"Deserialized Sequence: {deserializedManifestDict.Sequence}");
-            Console.WriteLine($"Deserialized Dependencies Count: {deserializedManifestDict.Dependencies.Count}");
-
-            // Convert to SUIT format
-            List<object> suitList = manifestDict.ToSUIT();
-            Console.WriteLine($"SUIT List: {string.Join(", ", suitList)}");
-
-            // Convert from SUIT format
-            var newManifestDict = new SUITManifestDict();
-            newManifestDict.FromSUIT(suitList);
-            Console.WriteLine($"New Manifest Dict: Version={newManifestDict.Version}, Sequence={newManifestDict.Sequence}");
+            DependenciesWrap.Add(depWrap);
         }
-    }*/
+    }
+
+    public List<object> ToSUIT()
+    {
+        List<object> suitList = new List<object>
+        {
+            Version,
+            Sequence,
+            Dependencies,
+            DependenciesWrap.Select(dep => dep.EncodeToBytes()).ToList(),
+            ComponentsWrap.Select(comp => comp.EncodeToBytes()).ToList(),
+            ManifestsWrap.Select(manifest => manifest.EncodeToBytes()).ToList()
+        };
+
+        return suitList;
+    }
+
+    public void FromSUIT(List<object> suitList)
+    {
+        if (suitList == null || suitList.Count < 6)
+        {
+            throw new ArgumentException("Invalid SUIT List");
+        }
+
+        Version = Convert.ToInt32(suitList[0]);
+        Sequence = Convert.ToInt32(suitList[1]);
+        Dependencies = (List<SUITDependency>)suitList[2];
+        
+        DependenciesWrap = ((List<byte[]>)suitList[3])
+            .Select(bytes =>
+            {
+                var depWrap = new SUITBWrapField<COSEList>();
+                depWrap.DecodeFromBytes(bytes);
+                return depWrap;
+            }).ToList();
+
+        ComponentsWrap = ((List<byte[]>)suitList[4])
+            .Select(bytes =>
+            {
+                var compWrap = new SUITBWrapField<COSEList>();
+                compWrap.DecodeFromBytes(bytes);
+                return compWrap;
+            }).ToList();
+
+        ManifestsWrap = ((List<byte[]>)suitList[5])
+            .Select(bytes =>
+            {
+                var manifestWrap = new SUITBWrapField<SUITBWrapField<CoseTaggedAuth>>();
+                manifestWrap.DecodeFromBytes(bytes);
+                return manifestWrap;
+            }).ToList();
+    }
+}

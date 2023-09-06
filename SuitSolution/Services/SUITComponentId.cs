@@ -5,10 +5,8 @@ using PeterO.Cbor;
 
 namespace SuitSolution.Services
 {
-    // SUITComponentId class
     public class SUITComponentId
     {
-        // Properties for fields
         [JsonPropertyName("vendor-id")]
         public string VendorId { get; set; }
 
@@ -17,14 +15,11 @@ namespace SuitSolution.Services
 
         [JsonPropertyName("image-digest")]
         public string ImageDigest { get; set; }
-
-        // Constructor
+        public string Id { get; set; } 
         public SUITComponentId()
         {
-            // Initialize properties if needed
         }
 
-        // Serialization methods
         public string ToJson()
         {
             var options = new JsonSerializerOptions
@@ -39,48 +34,71 @@ namespace SuitSolution.Services
             return JsonSerializer.Deserialize<SUITComponentId>(json);
         }
 
-        // Method for converting to SUIT format
         public CBORObject ToSUIT()
         {
-            var cborObject = CBORObject.NewMap();
-            cborObject.Add("vendor-id", VendorId);
-            cborObject.Add("class-id", ClassId);
-            cborObject.Add("image-digest", ImageDigest);
-            return cborObject;
+            var cborMap = CBORObject.NewMap();
+            cborMap.Add("vendor-id", VendorId);
+            cborMap.Add("class-id", ClassId);
+            cborMap.Add("image-digest", ImageDigest);
+            cborMap.Add("Id", Id); 
+
+            return cborMap;
         }
+
+
 
         public static SUITComponentId FromSUIT(CBORObject cborObject)
         {
-            return new SUITComponentId
+            if (cborObject == null || cborObject.Type != CBORType.Map)
             {
-                VendorId = cborObject["vendor-id"].AsString(),
-                ClassId = cborObject["class-id"].AsString(),
-                ImageDigest = cborObject["image-digest"].AsString()
-            };
+                throw new ArgumentException("Invalid CBOR object or type.");
+            }
+
+            var componentId = new SUITComponentId();
+            foreach (var key in cborObject.Keys)
+            {
+                switch (key.AsString())
+                {
+                    case "vendor-id":
+                        componentId.VendorId = cborObject[key].AsString();
+                        break;
+                    case "class-id":
+                        componentId.ClassId = cborObject[key].AsString();
+                        break;
+                    case "image-digest":
+                        componentId.ImageDigest = cborObject[key].AsString();
+                        break;
+                    case "Id":
+                        componentId.Id = cborObject[key].AsString();
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return componentId;
         }
+
     }
 }
 
-    // SUITComponentText class
     public class SUITComponentText
     {
-        // Properties for component text
-        [JsonPropertyName("vendor-name")] public string VendorName { get; set; }
+        [JsonPropertyName("vendor-name")] public string? VendorName { get; set; }
 
-        [JsonPropertyName("model-name")] public string ModelName { get; set; }
+        [JsonPropertyName("model-name")] public string? ModelName { get; set; }
 
-        [JsonPropertyName("vendor-domain")] public string VendorDomain { get; set; }
+        [JsonPropertyName("vendor-domain")] public string? VendorDomain { get; set; }
 
-        [JsonPropertyName("json-source")] public string JsonSource { get; set; }
+        [JsonPropertyName("json-source")] public string? JsonSource { get; set; }
 
         [JsonPropertyName("component-description")]
-        public string ComponentDescription { get; set; }
+        public string? ComponentDescription { get; set; }
 
-        [JsonPropertyName("version")] public string Version { get; set; }
+        [JsonPropertyName("version")] public string? Version { get; set; }
 
-        [JsonPropertyName("required-version")] public string RequiredVersion { get; set; }
+        [JsonPropertyName("required-version")] public string? RequiredVersion { get; set; }
 
-        // Serialization methods
         public string ToJson()
         {
             var options = new JsonSerializerOptions
@@ -95,10 +113,9 @@ namespace SuitSolution.Services
             return JsonSerializer.Deserialize<SUITComponentText>(json);
         }
 
-        // Method for converting to SUIT format
-        public Dictionary<object, object> ToSUIT()
+        public Dictionary<object, object?> ToSUIT()
         {
-            return new Dictionary<object, object>
+            return new Dictionary<object, object?>
             {
                 { "vendor-name", VendorName },
                 { "model-name", ModelName },
@@ -110,27 +127,32 @@ namespace SuitSolution.Services
             };
         }
 
-        // Method for converting from SUIT format
-        public void FromSUIT(Dictionary<object, object> suitDict)
+        public void FromSUIT(Dictionary<string, object> suitDict)
         {
-            VendorName = suitDict.TryGetValue("vendor-name", out var vendorName) ? (string)vendorName : null;
-            ModelName = suitDict.TryGetValue("model-name", out var modelName) ? (string)modelName : null;
-            VendorDomain = suitDict.TryGetValue("vendor-domain", out var vendorDomain) ? (string)vendorDomain : null;
-            JsonSource = suitDict.TryGetValue("json-source", out var jsonSource) ? (string)jsonSource : null;
-            ComponentDescription = suitDict.TryGetValue("component-description", out var compDesc)
-                ? (string)compDesc
-                : null;
-            Version = suitDict.TryGetValue("version", out var version) ? (string)version : null;
-            RequiredVersion = suitDict.TryGetValue("required-version", out var reqVersion) ? (string)reqVersion : null;
+            VendorName = GetStringFromSUITDict(suitDict, "vendor-name");
+            ModelName = GetStringFromSUITDict(suitDict, "model-name");
+            VendorDomain = GetStringFromSUITDict(suitDict, "vendor-domain");
+            JsonSource = GetStringFromSUITDict(suitDict, "json-source");
+            ComponentDescription = GetStringFromSUITDict(suitDict, "component-description");
+            Version = GetStringFromSUITDict(suitDict, "version");
+            RequiredVersion = GetStringFromSUITDict(suitDict, "required-version");
+        }
+
+        private string GetStringFromSUITDict(Dictionary<string, object> suitDict, string key)
+        {
+            if (suitDict.TryGetValue(key, out var value) && value is CBORObject cborString)
+            {
+                return cborString.AsString();
+            }
+            return null;
         }
     }
 
-/*Main class for testing
+/*
 public class Program
 {
     public static void Main(string[] args)
     {
-        // Create an instance of SUITComponentText
         var componentText = new SUITComponentText
         {
             VendorName = "Vendor",
@@ -142,7 +164,6 @@ public class Program
             RequiredVersion = "1.0"
         };
 
-        // Create an instance of SUITText
         var suitText = new SUITText
         {
             ManifestDescription = "Manifest description",

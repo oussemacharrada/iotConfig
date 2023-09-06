@@ -1,26 +1,39 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using PeterO.Cbor;
+using SuitSolution.Services.SuitSolution.Services;
 
 namespace SuitSolution.Services
 {
-    // SUITBWrapField class
-    public class SUITBWrapField<T>
-    {
-        // Property for wrapped object
-        [JsonPropertyName("obj")]
-        public static T WrappedObject { get; set; }
+    using System.Collections.Generic;
 
-        // Constructor
+    namespace SuitSolution.Services
+    {
+        public interface ISUITConvertible
+        {
+            List<object> ToSUIT();
+
+            void FromSUIT(List<Object> suitList);
+        }
+    }
+
+
+    public class SUITBWrapField<T> : ISUITConvertible where T : ISUITConvertible, new()
+    {
+        [JsonPropertyName("obj")] public T WrappedObject { get; set; }
+
         public SUITBWrapField(T wrappedObject)
         {
             WrappedObject = wrappedObject;
         }
-       
-    
-        // Serialization methods
+
+        public SUITBWrapField()
+        {
+            WrappedObject = new T();
+        }
+
         public string ToJson()
         {
             var options = new JsonSerializerOptions
@@ -30,77 +43,32 @@ namespace SuitSolution.Services
             return JsonSerializer.Serialize(this, options);
         }
 
-        public static SUITBWrapField<T> FromJson(string json)
+        public SUITBWrapField<T> FromJson(string json)
         {
             return JsonSerializer.Deserialize<SUITBWrapField<T>>(json);
         }
 
-        // Method for converting to SUIT format
         public List<object> ToSUIT()
         {
-            // Convert the WrappedObject to SUIT format as needed
-            // For example:
-            if (WrappedObject is ISUITConvertible suitConvertible)
-            {
-                return suitConvertible.ToSUIT();
-            }
-            else
-            {
-                throw new NotSupportedException($"WrappedObject type {typeof(T)} does not support SUIT conversion.");
-            }
+            return WrappedObject.ToSUIT();
         }
 
-        // Method for converting from SUIT format
-        public static void FromSUIT(List<object> suitList)
+        public void FromSUIT(List<Object> suitList)
         {
-            // Convert suitList to the WrappedObject as needed
-            // For example:
-            if (WrappedObject is ISUITConvertible suitConvertible)
-            {
-                suitConvertible.FromSUIT(suitList);
-            }
-            else
-            {
-                throw new NotSupportedException($"WrappedObject type {typeof(T)} does not support SUIT conversion.");
-            }
+            WrappedObject.FromSUIT(suitList);
         }
-    }
-
-    // Add any necessary interfaces for SUIT conversion
-    public interface ISUITConvertible
-    {
-        List<object> ToSUIT();
-        void FromSUIT(List<object> suitList);
-    }
-
-    // Sample wrapped class
-    public class SampleWrappedClass : ISUITConvertible
-    {
-        [JsonPropertyName("field1")]
-        public string Field1 { get; set; }
-
-        [JsonPropertyName("field2")]
-        public int Field2 { get; set; }
-
-        // Implement ISUITConvertible methods
-        public List<object> ToSUIT()
+        public byte[] EncodeToBytes()
         {
-            return new List<object>
-            {
-                Field1,
-                Field2
-            };
+          throw new NotImplementedException();
         }
 
-        public void FromSUIT(List<object> suitList)
+        public void DecodeFromBytes(byte[] bytes)
         {
-            if (suitList.Count != 2)
-            {
-                throw new Exception("Invalid SUIT list size for SampleWrappedClass");
-            }
-
-            Field1 = (string)suitList[0];
-            Field2 = (int)suitList[1];
+            throw new NotImplementedException();
         }
+        
     }
 }
+
+
+   

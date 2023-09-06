@@ -4,20 +4,16 @@ using PeterO.Cbor;
 
 namespace SuitSolution.Services
 {
-    // SUITSequenceComponentReset class
     public class SUITSequenceComponentReset
     {
-        // Properties for sequence component reset fields
         [JsonPropertyName("component")]
         public SUITComponentId Component { get; set; }
 
-        // Constructor
         public SUITSequenceComponentReset()
         {
             Component = new SUITComponentId();
         }
 
-        // Serialization methods
         public string ToJson()
         {
             var options = new JsonSerializerOptions
@@ -32,7 +28,6 @@ namespace SuitSolution.Services
             return JsonSerializer.Deserialize<SUITSequenceComponentReset>(json);
         }
 
-        // Method for converting to SUIT format
         public CBORObject ToSUIT()
         {
             return Component.ToSUIT();

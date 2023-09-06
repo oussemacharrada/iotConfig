@@ -4,17 +4,14 @@ using PeterO.Cbor;
 
 namespace SuitSolution.Services
 {
-    // SUITDependency class
     public class SUITDependency
     {
-        // Properties for dependency fields
         [JsonPropertyName("digest")]
         public string Digest { get; set; }
 
         [JsonPropertyName("prefix")]
         public string Prefix { get; set; }
 
-        // Serialization methods
         public string ToJson()
         {
             var options = new JsonSerializerOptions
@@ -29,7 +26,6 @@ namespace SuitSolution.Services
             return JsonSerializer.Deserialize<SUITDependency>(json);
         }
 
-        // Method for converting to SUIT format
         public CBORObject ToSUIT()
         {
             var cborObject = CBORObject.NewMap();

@@ -1,24 +1,22 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using PeterO.Cbor;
+using SuitSolution.Services.SuitSolution.Services;
 
 namespace SuitSolution.Services
 {
-    // SUITSequence class
-    public class SUITSequence
+    public class SUITSequence : ISUITConvertible
     {
-        // Properties for sequence fields
         [JsonPropertyName("seq")]
         public List<SUITComponentId> Sequence { get; set; }
 
-        // Constructor
         public SUITSequence()
         {
             Sequence = new List<SUITComponentId>();
         }
 
-        // Serialization methods
         public string ToJson()
         {
             var options = new JsonSerializerOptions
@@ -32,26 +30,59 @@ namespace SuitSolution.Services
         {
             return JsonSerializer.Deserialize<SUITSequence>(json);
         }
+        public List<object> ToSUIT()
+        {
+            var suitList = new List<object>();
+            foreach (var componentId in Sequence)
+            {
+                suitList.Add(componentId.ToSUIT());
+            }
 
-        // Method for converting to SUIT format
-        public CBORObject ToSUIT()
+            return suitList;
+        }
+
+        public CBORObject ToCBOR()
         {
             var cborArray = CBORObject.NewArray();
             foreach (var componentId in Sequence)
             {
-                cborArray.Add(componentId.ToSUIT());
+                cborArray.Add(componentId.ToSUIT()); 
             }
+
             return cborArray;
         }
 
-        public static SUITSequence FromSUIT(CBORObject cborArray)
+        public void FromSUIT(List<Object> suitList)
         {
-            var sequence = new SUITSequence();
+            Sequence.Clear();
+            foreach (var suitObject in suitList)
+            {
+                if (suitObject is SUITComponentId componentId)
+                {
+                    Sequence.Add(componentId);
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid object type in the list.");
+                }
+            }
+        }
+
+        public void FromCBOR(CBORObject cborArray)
+        {
+            Sequence.Clear();
             foreach (var item in cborArray.Values)
             {
-                sequence.Sequence.Add(SUITComponentId.FromSUIT(item));
+                if (item.Type == CBORType.Array)
+                {
+                    var componentId = SUITComponentId.FromSUIT(item);
+                    Sequence.Add(componentId);
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid CBOR type in the array.");
+                }
             }
-            return sequence;
         }
     }
 }

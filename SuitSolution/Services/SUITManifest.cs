@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using PeterO.Cbor;
+using SuitSolution.Services.SuitSolution.Services;
 
 namespace SuitSolution.Services
 {
-    // SUITManifest class
-    public class SUITManifest
+    public class SUITManifest : ISUITConvertible
     {
-        // Properties for fields
         [JsonPropertyName("manifest-version")]
         public int ManifestVersion { get; set; }
 
@@ -25,14 +25,12 @@ namespace SuitSolution.Services
         [JsonPropertyName("dependencies")]
         public List<SUITDependencies> Dependencies { get; set; }
 
-        // Constructor
         public SUITManifest()
         {
             Components = new List<SUITComponents>();
             Dependencies = new List<SUITDependencies>();
         }
 
-        // Serialization methods
         public string ToJson()
         {
             var options = new JsonSerializerOptions
@@ -47,8 +45,7 @@ namespace SuitSolution.Services
             return JsonSerializer.Deserialize<SUITManifest>(json);
         }
 
-        // Method for converting to SUIT format
-        public CBORObject ToSUIT()
+        public CBORObject ToCBOR()
         {
             var cborObject = CBORObject.NewMap();
             cborObject.Add("manifest-version", ManifestVersion);
@@ -78,19 +75,127 @@ namespace SuitSolution.Services
             return cborObject;
         }
 
-        public static SUITManifest FromSUIT(CBORObject cborObject)
+        public void FromCBOR(CBORObject cborObject)
         {
-            return new SUITManifest
+            if (cborObject == null || cborObject.Type != CBORType.Map)
             {
-                ManifestVersion = cborObject["manifest-version"].AsInt32(),
-                ManifestSequenceNumber = cborObject["manifest-sequence-number"].AsInt32(),
-                Common = SUITCommon.FromSUIT(cborObject["common"]),
-                Components = cborObject["components"].Values.Select(component => SUITComponents.FromSUIT(component)).ToList(),
-                Dependencies = cborObject["dependencies"].Values.Select(dependency => SUITDependencies.FromSUIT(dependency)).ToList()
+                throw new ArgumentException("Invalid CBOR object or type.");
+            }
+
+            ManifestVersion = cborObject["manifest-version"].AsInt32();
+            ManifestSequenceNumber = cborObject["manifest-sequence-number"].AsInt32();
+            Common = new SUITCommon();
+            Common.FromCBOR(cborObject["common"]);
+
+            if (cborObject.ContainsKey("components"))
+            {
+                var componentsList = cborObject["components"].Values;
+                Components = componentsList.Select(item => new SUITComponents().FromSUIT(item)).ToList();
+            }
+            else
+            {
+                Components = new List<SUITComponents>();
+            }
+
+            if (cborObject.ContainsKey("dependencies"))
+            {
+                var dependenciesList = cborObject["dependencies"].Values;
+                Dependencies = dependenciesList.Select(item => new SUITDependencies().FromSUIT(item)).ToList();
+            }
+            else
+            {
+                Dependencies = new List<SUITDependencies>();
+            }
+        }
+
+        public List<object> ToSUIT()
+        {
+            var commonDict = Common.ToSUITDict();
+            var componentsList = Components.Select(component => component.ToSUIT()).ToList();
+            var dependenciesList = Dependencies.Select(dependency => dependency.ToSUIT()).ToList();
+
+            return new List<object>
+            {
+                ManifestVersion,
+                ManifestSequenceNumber,
+                commonDict,
+                componentsList,
+                dependenciesList
             };
         }
-    }
 
-    // Other classes (SUITCommon, SUITComponents, SUITDependencies) are similar in structure and implementation.
-    // You can follow a similar pattern to the one shown above for their implementation.
+       
+
+       /* public SUITManifest FromSUIT(CBORObject cborObject)
+        {
+            var suitList = cborObject.ToObject<List<object>>();
+            var manifest = new SUITManifest();
+
+            foreach (var item in suitList)
+            {
+                if (item is Dictionary<object, object> dictionary)
+                {
+                    if (dictionary.ContainsKey("manifest-version"))
+                    {
+                        manifest.ManifestVersion = Convert.ToInt32(dictionary["manifest-version"]);
+                    }
+                    else if (dictionary.ContainsKey("manifest-sequence-number"))
+                    {
+                        manifest.ManifestSequenceNumber = Convert.ToInt32(dictionary["manifest-sequence-number"]);
+                    }
+                    else if (dictionary.ContainsKey("common"))
+                    {
+                        var common = new SUITCommon();
+                        common.FromSUITDict(dictionary["common"] as Dictionary<object, object>);
+                        manifest.Common = common;
+                    }
+                    else if (dictionary.ContainsKey("components"))
+                    {
+                        manifest.Components = ((List<object>)dictionary["components"]).Select(component =>
+                            new SUITComponents().FromSUIT(CBORObject.FromObject(component))).ToList();
+                    }
+                    else if (dictionary.ContainsKey("dependencies"))
+                    {
+                        manifest.Dependencies = ((List<object>)dictionary["dependencies"]).Select(dependency =>
+                            new SUITDependencies().FromSUIT(CBORObject.FromObject(dependency))).ToList();
+                    }
+                }
+            }
+
+            return manifest;
+        }
+*/
+         
+       public void FromSUIT(List<Object> suitList)
+       {
+           if (suitList == null || suitList.Count < 5)
+           {
+               throw new ArgumentException("Invalid SUIT List");
+           }
+
+           ManifestVersion = Convert.ToInt32(suitList[0]);
+           ManifestSequenceNumber = Convert.ToInt32(suitList[1]);
+           Common = new SUITCommon();
+
+           if (suitList[2] is List<object> commonList)
+           {
+               Common.FromSUIT(commonList);
+           }
+           else
+           {
+            
+               throw new ArgumentException("Invalid format for 'common' in SUIT List.");
+           }
+
+           Components = ((List<object>)suitList[3]).Select(component =>
+               new SUITComponents().FromSUIT(CBORObject.FromObject(component))).ToList();
+
+           Dependencies = ((List<object>)suitList[4]).Select(dependency =>
+               new SUITDependencies().FromSUIT(CBORObject.FromObject(dependency))).ToList();
+       }
+
+
+         
+
+    }
 }

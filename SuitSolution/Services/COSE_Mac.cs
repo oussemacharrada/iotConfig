@@ -6,7 +6,6 @@ using System.Text.Json.Serialization;
 
 namespace SuitSolution.Services
 {  
-    // COSE_Mac class
     public class COSE_Mac
     {
         [JsonPropertyName("protected")]
@@ -21,7 +20,6 @@ namespace SuitSolution.Services
         [JsonPropertyName("tag")]
         public SUITBytes Tag { get; set; }
 
-        // Serialization methods
         public string ToJson()
         {
             var options = new JsonSerializerOptions
@@ -36,8 +34,6 @@ namespace SuitSolution.Services
             return JsonSerializer.Deserialize<COSE_Mac>(json);
         }
 
-        // Method for converting to SUIT format
     
-        // Method for converting from SUIT format
     }
 }

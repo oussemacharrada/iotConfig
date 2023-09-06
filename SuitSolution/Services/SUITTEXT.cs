@@ -1,36 +1,58 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using PeterO.Cbor;
-namespace SuitSolution.Services;
+using SuitSolution.Services.SuitSolution.Services;
 
-public class SUITText
+namespace SuitSolution.Services
 {
-    [JsonPropertyName("languages")]
-    public List<string> Languages { get; set; }
-
-    [JsonPropertyName("texts")]
-    public List<string> Texts { get; set; }
-
-    public SUITText()
+    public class SUITText : ISUITConvertible
     {
-        Languages = new List<string>();
-        Texts = new List<string>();
-    }
+        [JsonPropertyName("languages")]
+        public List<string> Languages { get; set; }
 
-    public CBORObject ToSUIT()
-    {
-        CBORObject cborObject = CBORObject.NewMap();
-        cborObject.Add("languages", CBORObject.NewArray().Add(Languages.ToArray()));
-        cborObject.Add("texts", CBORObject.NewArray().Add(Texts.ToArray()));
-        return cborObject;
-    }
+        [JsonPropertyName("texts")]
+        public List<string> Texts { get; set; }
 
-    public static SUITText FromSUIT(CBORObject cborObject)
-    {
-        return new SUITText
+        public SUITText()
         {
-            Languages = new List<string>(cborObject["languages"].Values.Select(l => l.AsString())),
-            Texts = new List<string>(cborObject["texts"].Values.Select(t => t.AsString()))
-        };
+            Languages = new List<string>();
+            Texts = new List<string>();
+        }
+
+        public CBORObject ToCBOR()
+        {
+            var cborObject = CBORObject.NewMap();
+            cborObject.Add("languages", Languages);
+            cborObject.Add("texts", Texts);
+            return cborObject;
+        }
+
+        public void FromCBOR(CBORObject cborObject)
+        {
+            Languages = cborObject["languages"].Values.Select(l => l.AsString()).ToList();
+            Texts = cborObject["texts"].Values.Select(t => t.AsString()).ToList();
+        }
+
+        public List<object> ToSUIT()
+        {
+            var suitList = new List<object>
+            {
+                Languages,
+                Texts
+            };
+
+            return suitList;
+        }
+
+        public void FromSUIT(List<object> suitList)
+        {
+            if (suitList == null || suitList.Count < 2)
+            {
+                throw new ArgumentException("Invalid SUIT list.");
+            }
+
+            Languages = (List<string>)suitList[0];
+            Texts = (List<string>)suitList[1];
+        }
     }
 }

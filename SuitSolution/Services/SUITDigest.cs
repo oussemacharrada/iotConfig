@@ -11,18 +11,16 @@ public class SUITDigest
     [JsonPropertyName("digest-bytes")]
     public byte[] DigestBytes { get; set; }
 
-    // Implement methods for serialization and deserialization here
 
     public CBORObject ToSUIT()
     {
-        // Create a CBOR map representing the SUITDigest object
         var cborMap = CBORObject.NewMap();
         cborMap.Add("digest-bytes", CBORObject.FromObject(DigestBytes));
 
         return cborMap;
     }
 
-    public SUITDigest FromSUIT(CBORObject cbor)
+    public static SUITDigest FromSUIT(CBORObject cbor)
     {
         if (cbor.Type != CBORType.Map)
             throw new Exception("Invalid CBOR format for SUITDigest");

@@ -5,20 +5,17 @@ using PeterO.Cbor;
 
 namespace SuitSolution.Services
 {
-    // SUITDependencies class
+    
     public class SUITDependencies
     {
-        // Property for dependency list
         [JsonPropertyName("dependencies")]
         public List<SUITDependency> Dependencies { get; set; }
 
-        // Constructor
         public SUITDependencies()
         {
             Dependencies = new List<SUITDependency>();
         }
 
-        // Serialization methods
         public string ToJson()
         {
             var options = new JsonSerializerOptions
@@ -33,7 +30,6 @@ namespace SuitSolution.Services
             return JsonSerializer.Deserialize<SUITDependencies>(json);
         }
 
-        // Method for converting to SUIT format
         public CBORObject ToSUIT()
         {
             var cborArray = CBORObject.NewArray();
@@ -44,7 +40,7 @@ namespace SuitSolution.Services
             return cborArray;
         }
 
-        public static SUITDependencies FromSUIT(CBORObject cborArray)
+        public SUITDependencies FromSUIT(CBORObject cborArray)
         {
             var dependencies = new SUITDependencies();
             foreach (var item in cborArray.Values)
