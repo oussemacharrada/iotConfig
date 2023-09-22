@@ -72,6 +72,10 @@
               "target": "Package",
               "version": "[7.0.0-rc.1.22426.10, )"
             },
+            "TlvLib": {
+              "target": "Package",
+              "version": "[1.0.0, )"
+            },
             "xunit": {
               "target": "Package",
               "version": "[2.5.1-pre.26, )"

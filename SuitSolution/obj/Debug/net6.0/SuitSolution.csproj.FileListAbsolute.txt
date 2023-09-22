@@ -102,3 +102,4 @@ C:\Users\ousama.charada\RiderProjects\SuitSolution\SuitSolution\bin\Debug\net6.0
 C:\Users\ousama.charada\RiderProjects\SuitSolution\SuitSolution\bin\Debug\net6.0\zh-Hant\Microsoft.TestPlatform.CommunicationUtilities.resources.dll
 C:\Users\ousama.charada\RiderProjects\SuitSolution\SuitSolution\bin\Debug\net6.0\zh-Hant\Microsoft.TestPlatform.CrossPlatEngine.resources.dll
 C:\Users\ousama.charada\RiderProjects\SuitSolution\SuitSolution\bin\Debug\net6.0\zh-Hant\Microsoft.VisualStudio.TestPlatform.Common.resources.dll
+C:\Users\ousama.charada\RiderProjects\SuitSolution\SuitSolution\bin\Debug\net6.0\Greensoft.TlvLib.dll

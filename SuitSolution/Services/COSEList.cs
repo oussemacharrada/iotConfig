@@ -17,6 +17,17 @@ namespace SuitSolution.Services
             ListData = Array.Empty<CBORObject>();
         }
 
+      
+        public void InitializeRandomData()
+        {
+            var random = new Random();
+
+            ListData = new CBORObject[]
+            {
+                CBORObject.FromObject("string1")};
+            Console.WriteLine(ListData);
+        }
+
         public string ToJson()
         {
             var jsonList = new List<string>();

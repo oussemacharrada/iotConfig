@@ -9,6 +9,26 @@ namespace SuitSolution.Services
 {
     public class SUITComponents
     {
+        [JsonPropertyName("install-id")]
+        public SUITComponentId InstallId { get; set; }
+
+        [JsonPropertyName("download-id")]
+        public SUITComponentId DownloadId { get; set; }
+
+        [JsonPropertyName("load-id")]
+        public SUITComponentId LoadId { get; set; }
+
+        [JsonPropertyName("file")]
+        public string File { get; set; }
+
+        [JsonPropertyName("install-digest")]
+        public SUITDigest InstallDigest { get; set; }
+
+        [JsonPropertyName("install-size")]
+        public long InstallSize { get; set; }
+
+        [JsonPropertyName("uri")]
+        public string Uri { get; set; }
         [JsonPropertyName("load-components")]
         public List<SUITComponentId> LoadComponents { get; set; }
 
@@ -19,6 +39,40 @@ namespace SuitSolution.Services
         {
             LoadComponents = new List<SUITComponentId>();
             InstallComponents = new List<SUITComponentId>();
+        }
+        public void InitializeRandomData()
+        {
+            Random random = new Random();
+
+            int loadCount = random.Next(0, 6); 
+            LoadComponents = new List<SUITComponentId>();
+            for (int i = 0; i < loadCount; i++)
+            {
+                var component = new SUITComponentId();
+                component.InitializeRandomData();
+                LoadComponents.Add(component);
+            }
+
+            int installCount = random.Next(0, 6);
+            InstallComponents = new List<SUITComponentId>();
+            for (int i = 0; i < installCount; i++)
+            {
+                var component = new SUITComponentId();
+                component.InitializeRandomData();
+                InstallComponents.Add(component);
+            }
+
+            InstallId = new SUITComponentId();
+            InstallId.InitializeRandomData();
+            DownloadId = new SUITComponentId();
+            DownloadId.InitializeRandomData();
+            LoadId = new SUITComponentId();
+            LoadId.InitializeRandomData();
+            File = Guid.NewGuid().ToString(); 
+            InstallDigest = new SUITDigest();
+            InstallDigest.InitializeRandomData();
+            InstallSize = random.Next(100, 1000);
+            Uri = $"http://example.com/{Guid.NewGuid()}"; 
         }
 
         public string ToJson()

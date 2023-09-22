@@ -159,6 +159,26 @@ namespace SuitSolution.Services
 
             return suitDict;
         }
+        public void InitializeRandomData()
+        {
+            Random random = new Random();
+
+            Sequence = random.Next(1, 101);
+
+            int installCount = random.Next(0, 5); 
+            Install = new List<int>();
+            for (int i = 0; i < installCount; i++)
+            {
+                Install.Add(random.Next(1, 101)); 
+            }
+
+            int validateCount = random.Next(0, 5); 
+            Validate = new List<int>();
+            for (int i = 0; i < validateCount; i++)
+            {
+                Validate.Add(random.Next(1, 101));
+            }
+        }
 
         public void FromSUITDict(Dictionary<object, object> suitDict)
         {

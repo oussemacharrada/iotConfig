@@ -1685,6 +1685,18 @@
           "lib/netstandard1.3/System.Xml.XDocument.dll": {}
         }
       },
+      "TlvLib/1.0.0": {
+        "type": "package",
+        "dependencies": {
+          "NETStandard.Library": "1.6.1"
+        },
+        "compile": {
+          "lib/netstandard1.0/Greensoft.TlvLib.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.0/Greensoft.TlvLib.dll": {}
+        }
+      },
       "xunit/2.5.1-pre.26": {
         "type": "package",
         "dependencies": {
@@ -5521,6 +5533,20 @@
         "system.xml.xdocument.nuspec"
       ]
     },
+    "TlvLib/1.0.0": {
+      "sha512": "OEPJaZ+O/7e7EV0ajNNt8CXeSjbpiCOYrCSbG1+dwWtbcKJtIqMVCuyKQ9T/3RYdXufMiK40ThtLA+KsYbFVMA==",
+      "type": "package",
+      "path": "tlvlib/1.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net35/Greensoft.TlvLib.dll",
+        "lib/net40/Greensoft.TlvLib.dll",
+        "lib/netstandard1.0/Greensoft.TlvLib.dll",
+        "tlvlib.1.0.0.nupkg.sha512",
+        "tlvlib.nuspec"
+      ]
+    },
     "xunit/2.5.1-pre.26": {
       "sha512": "YSnqvVq45BQfRsXjfRU1BuyvTXOi/DOK0u5lXykfLvqh1NFhberzcpCGufoWFzk48mU3jYWz8LpzUU2KGMuH4A==",
       "type": "package",
@@ -5649,6 +5675,7 @@
       "NuGet.Frameworks >= 6.5.0",
       "PeterO.Cbor >= 4.5.2",
       "System.Formats.Cbor >= 7.0.0-rc.1.22426.10",
+      "TlvLib >= 1.0.0",
       "xunit >= 2.5.1-pre.26"
     ]
   },
@@ -5722,6 +5749,10 @@
           "System.Formats.Cbor": {
             "target": "Package",
             "version": "[7.0.0-rc.1.22426.10, )"
+          },
+          "TlvLib": {
+            "target": "Package",
+            "version": "[1.0.0, )"
           },
           "xunit": {
             "target": "Package",

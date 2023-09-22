@@ -37,7 +37,26 @@ public class SUITManifestTests
         Assert.NotNull(json);
     }
 
-  
+    [Fact]
+    public void ParseSUITManifest_ShouldSucceed()
+    {
+        byte[] cborData = File.ReadAllBytes("C:/Users/ousama.charada/OneDrive - ML!PA Consulting GmbH/Desktop/suit/suit-manifest-generator/hwr-0_fwt-13_fwr-1.mani");
+        try
+        {
+            CBORObject cborObject = CBORObject.DecodeFromBytes(cborData);
+            SUITManifest suitManifest = new SUITManifest();
+            suitManifest.FromCBOR(cborObject);
+
+            Assert.NotNull(suitManifest);
+            Assert.True(suitManifest.ManifestVersion > 0); 
+            Assert.True(suitManifest.ManifestSequenceNumber > 0);
+
+           }
+        catch (Exception ex)
+        {
+            Assert.True(false, $"Error parsing SUIT manifest: {ex.Message}");
+        }
+    }
     [Fact]
     public void ToCBOR_SerializesToCBORObject()
     {
@@ -159,6 +178,45 @@ public class SUITManifestTests
         var deserializedManifest = SUITManifest.FromJson(json);
 
         Assert.NotNull(deserializedManifest);
+    }
+    
+    
+    
+    [Fact]
+    public void CreateSUITManifest_WithValidData_PropertiesAreSet()
+    {
+        int manifestVersion = 1;
+        int manifestSequenceNumber = 123;
+        var common = new SUITCommon();
+        var components = new List<SUITComponents>();
+        var dependencies = new List<SUITDependencies>();
+
+        var suitManifest = new SUITManifest
+        {
+            ManifestVersion = manifestVersion,
+            ManifestSequenceNumber = manifestSequenceNumber,
+            Common = common,
+            Components = components,
+            Dependencies = dependencies
+        };
+
+        Assert.Equal(manifestVersion, suitManifest.ManifestVersion);
+        Assert.Equal(manifestSequenceNumber, suitManifest.ManifestSequenceNumber);
+        Assert.Same(common, suitManifest.Common);
+        Assert.Same(components, suitManifest.Components);
+        Assert.Same(dependencies, suitManifest.Dependencies);
+    }
+
+    [Fact]
+    public void CreateSUITManifest_WithDefaultConstructor_DefaultValues()
+    {
+        var suitManifest = new SUITManifest();
+
+        Assert.Equal(0, suitManifest.ManifestVersion);
+        Assert.Equal(0, suitManifest.ManifestSequenceNumber);
+        Assert.NotNull(suitManifest.Common);
+        Assert.Empty(suitManifest.Components);
+        Assert.Empty(suitManifest.Dependencies);
     }
 
 }

@@ -11,6 +11,12 @@ namespace SuitSolution.Services
 
         [JsonPropertyName("prefix")]
         public string Prefix { get; set; }
+        public void InitializeRandomData()
+        {
+            Digest = Guid.NewGuid().ToString();
+    
+            Prefix = Guid.NewGuid().ToString();
+        }
 
         public string ToJson()
         {

@@ -28,6 +28,14 @@ namespace SuitSolution.Services
         {
             WrappedObject = wrappedObject;
         }
+        public void SetValue(T newValue)
+        {
+            WrappedObject = newValue;
+        }
+        public T GetValue()
+        {
+            return WrappedObject;
+        }
 
         public SUITBWrapField()
         {
@@ -66,7 +74,7 @@ namespace SuitSolution.Services
         {
             throw new NotImplementedException();
         }
-        
+      
     }
 }
 

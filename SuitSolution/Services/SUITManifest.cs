@@ -27,6 +27,7 @@ namespace SuitSolution.Services
 
         public SUITManifest()
         {
+            Common = new SUITCommon();
             Components = new List<SUITComponents>();
             Dependencies = new List<SUITDependencies>();
         }
@@ -165,37 +166,171 @@ namespace SuitSolution.Services
             return manifest;
         }
 */
-         
-       public void FromSUIT(List<Object> suitList)
+       public void InitializeRandomData()
        {
-           if (suitList == null || suitList.Count < 5)
+           Random random = new Random();
+
+          
+           ManifestVersion = random.Next(1, 10); 
+           ManifestSequenceNumber = random.Next(1000, 9999); 
+
+      
+           Common = new SUITCommon();
+           Common.InitializeRandomData();
+
+      
+           Components.Clear();
+           int componentCount = random.Next(1, 5);
+           for (int i = 0; i < componentCount; i++)
            {
-               throw new ArgumentException("Invalid SUIT List");
+               SUITComponents component = new SUITComponents();
+               component.InitializeRandomData();
+               Console.WriteLine(Components);
+               Components.Add(component);
            }
 
-           ManifestVersion = Convert.ToInt32(suitList[0]);
-           ManifestSequenceNumber = Convert.ToInt32(suitList[1]);
-           Common = new SUITCommon();
-
-           if (suitList[2] is List<object> commonList)
+           
+           Dependencies.Clear(); 
+           int dependencyCount = random.Next(1, 5); 
+           for (int i = 0; i < dependencyCount; i++)
            {
-               Common.FromSUIT(commonList);
+               SUITDependencies dependency = new SUITDependencies();
+               dependency.InitializeRandomData(2);
+               Console.WriteLine(dependency);
+
+               Dependencies.Add(dependency);
+           }
+       }
+
+         
+       public void FromSUIT(List<object> suitList)
+       {
+           if (suitList == null || suitList.Count == 0)
+           {
+               throw new ArgumentException("Invalid input data for SUITManifest.");
+           }
+
+           if (suitList[0] is CBORObject cborManifestVersion && cborManifestVersion.Type == CBORType.Integer)
+           {
+               ManifestVersion = (int)cborManifestVersion.AsInt32();
            }
            else
            {
-            
-               throw new ArgumentException("Invalid format for 'common' in SUIT List.");
+               throw new ArgumentException("Invalid format for manifest version in SUITManifest.");
            }
 
-           Components = ((List<object>)suitList[3]).Select(component =>
-               new SUITComponents().FromSUIT(CBORObject.FromObject(component))).ToList();
+           if (suitList[1] is CBORObject cborManifestSequenceNumber && cborManifestSequenceNumber.Type == CBORType.Integer)
+           {
+               ManifestSequenceNumber = (int)cborManifestSequenceNumber.AsInt32();
+           }
+           else
+           {
+               throw new ArgumentException("Invalid format for manifest sequence number in SUITManifest.");
+           }
 
-           Dependencies = ((List<object>)suitList[4]).Select(dependency =>
-               new SUITDependencies().FromSUIT(CBORObject.FromObject(dependency))).ToList();
+           if (suitList[2] is CBORObject cborCommon && cborCommon.Type == CBORType.Map)
+           {
+               var commonDict = cborCommon.ConvertToDictionary();
+               var common = new SUITCommon();
+               common.FromSUITDict(commonDict);
+               Common = common;
+           }
+           else
+           {
+               throw new ArgumentException("Invalid format for common data in SUITManifest.");
+           }
+
+           if (suitList.Count > 3 && suitList[3] is List<object> componentsList)
+           {
+               Components = componentsList
+                   .Select(item => new SUITComponents().FromSUIT(CBORObject.FromObject(item as Dictionary<object, object>)))
+                   .ToList();
+           }
+
+           if (suitList.Count > 4 && suitList[4] is List<object> dependenciesList)
+           {
+               Dependencies = dependenciesList
+                   .Select(item => new SUITDependencies().FromSUIT(CBORObject.FromObject(item as Dictionary<object, object>)))
+                   .ToList();
+           }
        }
+
+
 
 
          
 
     }
+ 
+
+        public class SUITManifestBuilder
+        {
+            private SUITManifest manifest;
+
+            public SUITManifestBuilder()
+            {
+                manifest = new SUITManifest();
+            }
+
+            public SUITManifestBuilder SetManifestVersion(int version)
+            {
+                manifest.ManifestVersion = version;
+                return this;
+            }
+
+            public SUITManifestBuilder SetManifestSequenceNumber(int sequenceNumber)
+            {
+                manifest.ManifestSequenceNumber = sequenceNumber;
+                return this;
+            }
+
+            public SUITManifestBuilder SetCommon(SUITCommon common)
+            {
+                manifest.Common = common;
+                return this;
+            }
+
+            public SUITManifestBuilder AddComponent(SUITComponents component)
+            {
+                if (manifest.Components == null)
+                {
+                    manifest.Components = new List<SUITComponents>();
+                }
+                manifest.Components.Add(component);
+                return this;
+            }
+
+            public SUITManifestBuilder AddDependency(SUITDependencies dependency)
+            {
+                if (manifest.Dependencies == null)
+                {
+                    manifest.Dependencies = new List<SUITDependencies>();
+                }
+                manifest.Dependencies.Add(dependency);
+                return this;
+            }
+
+            public SUITManifest Build()
+            {
+                return manifest;
+            }
+
+            public string ToJson()
+            {
+                return manifest.ToJson();
+            }
+
+            public static SUITManifestBuilder FromJson(string json)
+            {
+                return new SUITManifestBuilder().SetManifest(SUITManifest.FromJson(json));
+            }
+
+            public SUITManifestBuilder SetManifest(SUITManifest existingManifest)
+            {
+                manifest = existingManifest;
+                return this;
+            }
+        }
+   
+
 }

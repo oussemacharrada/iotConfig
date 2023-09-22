@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "Vajm30fuhwxxBaWxZ4QQCOWdg+wYwc2ib3us6iJ/iMvaAhuWG2owh8S+WeLOTpIsB1FVD0FZ4j6TRWhp1X/b6w==",
+  "dgSpecHash": "BeujkkOnXXdQHk/YlNQmQr5SNKsdXkfbIIT7372mGQIE+p9AN1Wqify3wUZToUemouEvmQaGPCa6ijSFtGQJFg==",
   "success": true,
   "projectFilePath": "C:\\Users\\ousama.charada\\RiderProjects\\SuitSolution\\SuitSolution\\SuitSolution.csproj",
   "expectedPackageFiles": [
@@ -91,6 +91,7 @@
     "C:\\Users\\ousama.charada\\.nuget\\packages\\system.threading.timer\\4.3.0\\system.threading.timer.4.3.0.nupkg.sha512",
     "C:\\Users\\ousama.charada\\.nuget\\packages\\system.xml.readerwriter\\4.3.0\\system.xml.readerwriter.4.3.0.nupkg.sha512",
     "C:\\Users\\ousama.charada\\.nuget\\packages\\system.xml.xdocument\\4.3.0\\system.xml.xdocument.4.3.0.nupkg.sha512",
+    "C:\\Users\\ousama.charada\\.nuget\\packages\\tlvlib\\1.0.0\\tlvlib.1.0.0.nupkg.sha512",
     "C:\\Users\\ousama.charada\\.nuget\\packages\\xunit\\2.5.1-pre.26\\xunit.2.5.1-pre.26.nupkg.sha512",
     "C:\\Users\\ousama.charada\\.nuget\\packages\\xunit.abstractions\\2.0.3\\xunit.abstractions.2.0.3.nupkg.sha512",
     "C:\\Users\\ousama.charada\\.nuget\\packages\\xunit.analyzers\\1.3.0-pre.19\\xunit.analyzers.1.3.0-pre.19.nupkg.sha512",

@@ -1,18 +1,17 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System;
+using System.Collections.Generic;
 using PeterO.Cbor;
-using JsonSerializer = Newtonsoft.Json.JsonSerializer;
+using SuitSolution.Services.SuitSolution.Services;
 
 namespace SuitSolution.Services
 {
-    public class SUITBytes
+    public class SUITBytes : ISUITConvertible
     {
-        [JsonPropertyName("bytes")]
         public byte[] Bytes { get; set; }
 
         public SUITBytes()
         {
-            Bytes = new byte[0]; 
+            Bytes = new byte[0];
         }
 
         public SUITBytes(byte[] bytes)
@@ -20,31 +19,38 @@ namespace SuitSolution.Services
             Bytes = bytes;
         }
 
-
-      /*  public string ToJson()
+        public void InitializeRandomData()
         {
-            var options = new JsonSerializerOptions
+            var random = new Random();
+            var length = random.Next(10, 50); 
+            var bytes = new byte[length];
+            random.NextBytes(bytes);
+
+            Bytes = bytes;
+        }
+
+        public List<object> ToSUIT()
+        {
+            return new List<object> { Bytes };
+        }
+
+        public void FromSUIT(List<object> suitList)
+        {
+            if (suitList == null || suitList.Count == 0 || !(suitList[0] is CBORObject cborBytes))
             {
-                WriteIndented = true
-            };
-            return JsonSerializer.Serialize(this, options);
+                throw new ArgumentException("Invalid input data for SUITBytes.");
+            }
+
+            if (cborBytes.Type == CBORType.ByteString)
+            {
+                Bytes = cborBytes.GetByteString();
+            }
+            else
+            {
+                throw new ArgumentException("Invalid format for byte data in SUITBytes.");
+            }
         }
 
-        public static SUITBytes FromJson(string json)
-        {
-            return JsonSerializer.Deserialize<SUITBytes>(json);
-        }
-*/
-        public CBORObject ToSUIT()
-        {
-            return CBORObject.FromObject(Bytes);
-        }
 
-        public static SUITBytes FromSUIT(CBORObject suitBytes)
-        {
-
-            byte[] bytes = suitBytes.EncodeToBytes();
-            return new SUITBytes(bytes);
-        }
     }
 }

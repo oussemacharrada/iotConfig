@@ -9,10 +9,10 @@ namespace SuitSolution.Services
     public class SUITCommand
     {
         [JsonPropertyName("sequence-number")]
-        public int SequenceNumber { get; set; }
+        public SUITComponentId ComponentId { get; set; }
 
         [JsonPropertyName("command")]
-        public int Command { get; set; }
+        public Dictionary<string, object> CommandId { get; set; }
 
         [JsonPropertyName("args")]
         public List<CBORObject> Args { get; set; }
@@ -22,9 +22,11 @@ namespace SuitSolution.Services
             Args = new List<CBORObject>();
         }
 
-        public SUITCommand(SUITComponentId cid, string name, object jarg)
+        public SUITCommand(Dictionary<string, object> cid, Dictionary<string, object> name, object jarg)
         {
-            throw new NotImplementedException();
+            this.CommandId = cid;
+            this.CommandId = name;
+            this.Args = (List<CBORObject>?)jarg;
         }
 
         public string ToJson()
@@ -41,33 +43,50 @@ namespace SuitSolution.Services
             return JsonSerializer.Deserialize<SUITCommand>(json);
         }
 
-        public CBORObject ToSUIT()
+       
+    }
+    
+    
+    
+    public class SUITCommandBuilder
+    {
+        private SUITCommand command;
+
+        public SUITCommandBuilder()
         {
-            var cborObject = CBORObject.NewMap();
-            cborObject.Add("sequence-number", SequenceNumber);
-            cborObject.Add("command", Command);
-
-            if (Args != null)
-            {
-                var argsArray = CBORObject.NewArray();
-                foreach (var arg in Args)
-                {
-                    argsArray.Add(arg);
-                }
-                cborObject.Add("args", argsArray);
-            }
-
-            return cborObject;
+            command = new SUITCommand();
         }
 
-        public static SUITCommand FromSUIT(CBORObject cborObject)
+        
+        public SUITCommandBuilder AddArgument(CBORObject argument)
         {
-            return new SUITCommand
+            if (command.Args == null)
             {
-                SequenceNumber = cborObject["sequence-number"].AsInt32(),
-                Command = cborObject["command"].AsInt32(),
-                Args = cborObject["args"].Values.ToList()
-            };
+                command.Args = new List<CBORObject>();
+            }
+            command.Args.Add(argument);
+            return this;
+        }
+
+        public SUITCommand Build()
+        {
+            return command;
+        }
+
+        public string ToJson()
+        {
+            return command.ToJson();
+        }
+
+        public static SUITCommandBuilder FromJson(string json)
+        {
+            return new SUITCommandBuilder().SetCommand(SUITCommand.FromJson(json));
+        }
+
+        public SUITCommandBuilder SetCommand(SUITCommand existingCommand)
+        {
+            command = existingCommand;
+            return this;
         }
     }
 }

@@ -15,6 +15,19 @@ namespace SuitSolution.Services
         {
             Dependencies = new List<SUITDependency>();
         }
+        public void InitializeRandomData(int numberOfDependencies)
+        {
+            Dependencies.Clear();
+
+            for (int i = 0; i < numberOfDependencies; i++)
+            {
+                var dependency = new SUITDependency();
+
+                dependency.InitializeRandomData();
+
+                Dependencies.Add(dependency);
+            }
+        }
 
         public string ToJson()
         {

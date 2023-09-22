@@ -7,6 +7,7 @@ namespace SuitSolution.Services
 {
     public class SUITComponentId
     {
+        
         [JsonPropertyName("vendor-id")]
         public string VendorId { get; set; }
 
@@ -18,6 +19,15 @@ namespace SuitSolution.Services
         public string Id { get; set; } 
         public SUITComponentId()
         {
+        }
+        public void InitializeRandomData()
+        {
+            Random random = new Random();
+
+            VendorId = Guid.NewGuid().ToString();
+            ClassId = Guid.NewGuid().ToString();
+            ImageDigest = Guid.NewGuid().ToString(); 
+            Id = Guid.NewGuid().ToString(); 
         }
 
         public string ToJson()
