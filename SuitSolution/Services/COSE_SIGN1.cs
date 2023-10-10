@@ -1,66 +1,17 @@
 using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Dahomey.Cbor.ObjectModel;
-using Dahomey.Cbor.Serialization;
-using PeterO.Cbor;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using SuitSolution.Services;
 
-namespace SuitSolution.Services
+public class COSESign1 : SUITManifestNamedList
 {
-    public class COSE_SIGN1
+    public COSESign1()
     {
-        public CBORObject ProtectedHeaders { get; set; }
-        public CBORObject UnprotectedHeaders { get; set; }
-        public byte[] Payload { get; set; }
-        public byte[] Signature { get; set; }
-        public COSE_SIGN1(CBORObject protectedHeaders, CBORObject unprotectedHeaders, byte[] payload, byte[] signature)
-        {
-            ProtectedHeaders = protectedHeaders;
-            UnprotectedHeaders = unprotectedHeaders;
-            Payload = payload;
-            Signature = signature;
-        }
-     
-
-        public CBORObject EncodeToCBOR()
-        {
-            var coseMap = CBORObject.NewMap();
-            if (ProtectedHeaders != null)
-            {
-                coseMap.Add(1, ProtectedHeaders);
-            }
-            if (UnprotectedHeaders != null)
-            {
-                coseMap.Add(4, UnprotectedHeaders);
-            }
-            coseMap.Add(18, CBORObject.FromObject(Payload));
-            coseMap.Add(98, CBORObject.FromObject(Signature));
-            return coseMap;
-        }
-
-        public static COSE_SIGN1 DecodeFromCBOR(CBORObject cbor)
-        {
-            var coseSign1 = new COSE_SIGN1(null, null, null, null);
-            if (cbor.Type == CBORType.Map)
-            {
-                if (cbor.ContainsKey(1))
-                {
-                    coseSign1.ProtectedHeaders = cbor[1];
-                }
-                if (cbor.ContainsKey(4))
-                {
-                    coseSign1.UnprotectedHeaders = cbor[4];
-                }
-                if (cbor.ContainsKey(18))
-                {
-                    coseSign1.Payload = cbor[18].ToObject<byte[]>();
-                }
-                if (cbor.ContainsKey(98))
-                {
-                    coseSign1.Signature = cbor[98].ToObject<byte[]>();
-                }
-            }
-            return coseSign1;
-        }
+        fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields(
+            ("protected", "protected", () => new SUITBWrapField<COSEHeaderMap>(new COSEHeaderMap())),
+            ("unprotected", "unprotected", () => new COSEHeaderMap()),
+            ("payload", "payload", () => new SUITBWrapField<SUITDigest>(new SUITDigest()))
+            
+        ));
     }
 }

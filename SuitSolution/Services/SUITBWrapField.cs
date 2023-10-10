@@ -1,82 +1,91 @@
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Text;
+using Newtonsoft.Json;
 using PeterO.Cbor;
-using SuitSolution.Services.SuitSolution.Services;
+using SuitSolution.Exceptions;
+using SuitSolution.Interfaces;
 
-namespace SuitSolution.Services
+public class SUITBWrapField<T> where T : ISUITConvertible<T>, new()
 {
-    using System.Collections.Generic;
+    public T v { get; set; }
 
-    namespace SuitSolution.Services
+    public SUITBWrapField()
     {
-        public interface ISUITConvertible
-        {
-            List<object> ToSUIT();
-
-            void FromSUIT(List<Object> suitList);
-        }
+        v = new T();
     }
 
-
-    public class SUITBWrapField<T> : ISUITConvertible where T : ISUITConvertible, new()
+    public SUITBWrapField(T initialValue)
     {
-        [JsonPropertyName("obj")] public T WrappedObject { get; set; }
-
-        public SUITBWrapField(T wrappedObject)
-        {
-            WrappedObject = wrappedObject;
-        }
-        public void SetValue(T newValue)
-        {
-            WrappedObject = newValue;
-        }
-        public T GetValue()
-        {
-            return WrappedObject;
-        }
-
-        public SUITBWrapField()
-        {
-            WrappedObject = new T();
-        }
-
-        public string ToJson()
-        {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-            return JsonSerializer.Serialize(this, options);
-        }
-
-        public SUITBWrapField<T> FromJson(string json)
-        {
-            return JsonSerializer.Deserialize<SUITBWrapField<T>>(json);
-        }
-
-        public List<object> ToSUIT()
-        {
-            return WrappedObject.ToSUIT();
-        }
-
-        public void FromSUIT(List<Object> suitList)
-        {
-            WrappedObject.FromSUIT(suitList);
-        }
-        public byte[] EncodeToBytes()
-        {
-          throw new NotImplementedException();
-        }
-
-        public void DecodeFromBytes(byte[] bytes)
-        {
-            throw new NotImplementedException();
-        }
-      
+        v = initialValue;
     }
-}
 
+    public byte[] ToSUIT()
+    {
+        var cborObject = v.ToSUIT();
+        var cbor = CBORObject.FromObject(cborObject);
+        byte[] cborBytes = cbor.EncodeToBytes();
+        // Convert the bytes to a hexadecimal string
+        string hexString = BitConverter.ToString(cborBytes).Replace("-", "");
+
+        // Convert the hexadecimal string to bytes (UTF-8 encoded)
+        byte[] utf8Bytes = Encoding.UTF8.GetBytes(hexString);
 
    
+        return utf8Bytes;
+    }
+
+    public string ToJson()
+    {
+        var suitDict = v.ToSUIT();
+        return JsonConvert.SerializeObject(suitDict);
+    }
+
+    public SUITBWrapField<T> FromSUIT(byte[] cborBytes)
+    {
+        if (cborBytes == null)
+        {
+            throw new ArgumentNullException(nameof(cborBytes));
+        }
+
+        try
+        {
+            var suitDict = CBORObject.DecodeFromBytes(cborBytes).ToObject<Dictionary<string, object>>();
+            v = new T().FromSUIT(suitDict);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Failed to load CBOR data: {BitConverter.ToString(cborBytes)}");
+            throw new SUITException(
+                message: $"Failed to load CBOR data: {BitConverter.ToString(cborBytes)}");
+        }
+
+        return this;
+    }
+
+    public SUITBWrapField<T> FromJson(string data)
+    {
+        try
+        {
+            var suitDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+            v = new T().FromSUIT(suitDict);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Failed to parse JSON data: {data}");
+            throw new SUITException(
+                message: $"Failed to parse JSON data: {data}");
+        }
+        return this;
+    }
+
+    public string ToDebug(string indent)
+    {
+        var sb = new StringBuilder();
+        sb.Append("h'");
+        sb.Append(BitConverter.ToString(ToSUIT()).Replace("-", ""));
+        sb.Append("' / ");
+        sb.Append(v.ToDebug(indent));
+        sb.Append(" /");
+        return sb.ToString();
+    }
+}

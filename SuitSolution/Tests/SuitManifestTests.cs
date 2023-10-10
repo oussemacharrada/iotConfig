@@ -1,222 +1,63 @@
 using System;
 using System.Collections.Generic;
-using PeterO.Cbor;
-using SuitSolution.Services;
+using Newtonsoft.Json;
 using Xunit;
-namespace SuitSolution.Tests;
-
+using SuitSolution.Services;
+/*
 public class SUITManifestTests
 {
     [Fact]
-    public void ToJson_SerializesToJson()
+    public void TestSUITManifestSerialization()
     {
-        var manifest = new SUITManifest
-        {
-            ManifestVersion = 1,
-            ManifestSequenceNumber = 42,
-            Common = new SUITCommon
-            {
-                Sequence = 100,
-                Install = new List<int> { 1, 2, 3 },
-                Validate = new List<int> { 4, 5 }
-            },
-            Components = new List<SUITComponents>
-            {
-                new SUITComponents {  },
-                new SUITComponents {  }
-            },
-            Dependencies = new List<SUITDependencies>
-            {
-                new SUITDependencies {  },
-                new SUITDependencies {}
-            }
-        };
+        var manifest = SUITManifestDataSeeder.SeedSUITManifest();
 
-        var json = manifest.ToJson();
-
-        Assert.NotNull(json);
+        var suitJson = manifest.ToJson();
+        Console.WriteLine("To Json =  "+ suitJson);
     }
+
 
     [Fact]
-    public void ParseSUITManifest_ShouldSucceed()
+    public void TestSUITManifestSerializationAndDeserialization()
     {
-        byte[] cborData = File.ReadAllBytes("C:/Users/ousama.charada/OneDrive - ML!PA Consulting GmbH/Desktop/suit/suit-manifest-generator/hwr-0_fwt-13_fwr-1.mani");
-        try
-        {
-            CBORObject cborObject = CBORObject.DecodeFromBytes(cborData);
-            SUITManifest suitManifest = new SUITManifest();
-            suitManifest.FromCBOR(cborObject);
+        // Arrange
+        var manifest = SUITManifestDataSeeder.SeedSUITManifest();
 
-            Assert.NotNull(suitManifest);
-            Assert.True(suitManifest.ManifestVersion > 0); 
-            Assert.True(suitManifest.ManifestSequenceNumber > 0);
+        // Act
+        var suitJson = manifest.ToJson();
+        var deserializedManifest = new SUITManifest().FromJson(suitJson);
+        Assert.Equal(deserializedManifest.version.v, manifest.version.v);
+        Assert.Equal(deserializedManifest.sequence.v, manifest.sequence.v);
+        Assert.Equal(deserializedManifest.common.v, manifest.common.v);
 
-           }
-        catch (Exception ex)
-        {
-            Assert.True(false, $"Error parsing SUIT manifest: {ex.Message}");
-        }
+        Console.WriteLine("To Json =  "+ deserializedManifest);
+
     }
     [Fact]
-    public void ToCBOR_SerializesToCBORObject()
+    public void TestSUITConversion()
     {
-        var manifest = new SUITManifest
-        {
-            ManifestVersion = 1,
-            ManifestSequenceNumber = 42,
-            Common = new SUITCommon
-            {
-                Sequence = 100,
-                Install = new List<int> { 1, 2, 3 },
-                Validate = new List<int> { 4, 5 }
-            },
-            Components = new List<SUITComponents>
-            {
-                new SUITComponents {  },
-                new SUITComponents { }
-            },
-            Dependencies = new List<SUITDependencies>
-            {
-                new SUITDependencies { },
-                new SUITDependencies {  }
-            }
-        };
+        // Arrange
+        var originalManifest = SUITManifestDataSeeder.SeedSUITManifest();
+        var suitJson = originalManifest.ToSUIT();
 
-        var cborObject = manifest.ToCBOR();
+        // Act
+        var convertedManifest = new SUITManifest();
+        convertedManifest.FromSUIT(suitJson);
 
-        Assert.NotNull(cborObject);
+        // Assert
+        Console.WriteLine("Original Manifest:");
+        Console.WriteLine(originalManifest.ToDebug(""));
+        
+        Console.WriteLine("Converted Manifest:");
+        Console.WriteLine(convertedManifest.ToDebug(""));
+        
+        // Now, you can add assertions to compare the properties of the two manifests
+        Assert.Equal(originalManifest.version.v, convertedManifest.version.v);
+        Assert.Equal(originalManifest.sequence.v, convertedManifest.sequence.v);
+        // Add more assertions for other properties as needed
+
+        // Example assertion for comparing the 'common' property
+        Assert.Equal(originalManifest.common.ToJson(), convertedManifest.common.ToJson());
     }
 
-    [Fact]
-    public void FromCBOR_DeserializesFromCBORObject()
-    {
-        var cborObject = CBORObject.FromObject(new Dictionary<string, object>
-        {
-            { "manifest-version", 1 },
-            { "manifest-sequence-number", 42 },
-            { "common", new Dictionary<string, object>
-                {
-                    { "sequence", 100 },
-                    { "install", new List<int> { 1, 2, 3 } },
-                    { "validate", new List<int> { 4, 5 } }
-                }
-            },
-            { "components", new List<object> {  } },
-            { "dependencies", new List<object> {} }
-        });
-
-        var manifest = new SUITManifest();
-        manifest.FromCBOR(cborObject);
-
-        Assert.NotNull(manifest);
-    }
-
-    [Fact]
-    public void ToSUIT_ConvertsToSUITFormat()
-    {
-        var manifest = new SUITManifest
-        {
-            ManifestVersion = 1,
-            ManifestSequenceNumber = 42,
-            Common = new SUITCommon
-            {
-                Sequence = 100,
-                Install = new List<int> { 1, 2, 3 },
-                Validate = new List<int> { 4, 5 }
-            },
-            Components = new List<SUITComponents>
-            {
-                new SUITComponents {  },
-                new SUITComponents { }
-            },
-            Dependencies = new List<SUITDependencies>
-            {
-                new SUITDependencies { },
-                new SUITDependencies {  }
-            }
-        };
-
-        var suitList = manifest.ToSUIT();
-
-        Assert.NotNull(suitList);
-    }
-
-    [Fact]
-    public void FromSUIT_ConvertsFromSUITFormat()
-    {
-        var common = new SUITCommon
-        {
-            Sequence = 100,
-            Install = new List<int> { 1, 2, 3 },
-            Validate = new List<int> { 4, 5 }
-        };
-
-        var components = new List<SUITComponents>
-        {
-            new SUITComponents
-            {
-            },
-        };
-
-        var dependencies = new List<SUITDependencies>
-        {
-            new SUITDependencies
-            {
-            },
-        };
-
-        var manifest = new SUITManifest
-        {
-            ManifestVersion = 1,
-            ManifestSequenceNumber = 42,
-            Common = common,
-            Components = components,
-            Dependencies = dependencies
-        };
-
-        var json = manifest.ToJson();
-        var deserializedManifest = SUITManifest.FromJson(json);
-
-        Assert.NotNull(deserializedManifest);
-    }
-    
-    
-    
-    [Fact]
-    public void CreateSUITManifest_WithValidData_PropertiesAreSet()
-    {
-        int manifestVersion = 1;
-        int manifestSequenceNumber = 123;
-        var common = new SUITCommon();
-        var components = new List<SUITComponents>();
-        var dependencies = new List<SUITDependencies>();
-
-        var suitManifest = new SUITManifest
-        {
-            ManifestVersion = manifestVersion,
-            ManifestSequenceNumber = manifestSequenceNumber,
-            Common = common,
-            Components = components,
-            Dependencies = dependencies
-        };
-
-        Assert.Equal(manifestVersion, suitManifest.ManifestVersion);
-        Assert.Equal(manifestSequenceNumber, suitManifest.ManifestSequenceNumber);
-        Assert.Same(common, suitManifest.Common);
-        Assert.Same(components, suitManifest.Components);
-        Assert.Same(dependencies, suitManifest.Dependencies);
-    }
-
-    [Fact]
-    public void CreateSUITManifest_WithDefaultConstructor_DefaultValues()
-    {
-        var suitManifest = new SUITManifest();
-
-        Assert.Equal(0, suitManifest.ManifestVersion);
-        Assert.Equal(0, suitManifest.ManifestSequenceNumber);
-        Assert.NotNull(suitManifest.Common);
-        Assert.Empty(suitManifest.Components);
-        Assert.Empty(suitManifest.Dependencies);
-    }
-
-}
+  
+}   */

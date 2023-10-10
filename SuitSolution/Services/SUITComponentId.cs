@@ -1,181 +1,115 @@
 using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using PeterO.Cbor;
+using System.Collections.Generic;
+using System.Text;
+using SuitSolution.Interfaces;
+using SuitSolution.Services;
 
-namespace SuitSolution.Services
+public class SUITComponentId : SUITManifestArray<SUITComponentId>, ISUITConvertible<SUITComponentId>
 {
-    public class SUITComponentId
+    private readonly List<SUITBytes> componentIds = new List<SUITBytes>();
+
+    public SUITComponentId()
     {
-        
-        [JsonPropertyName("vendor-id")]
-        public string VendorId { get; set; }
+    }
 
-        [JsonPropertyName("class-id")]
-        public string ClassId { get; set; }
+    public SUITComponentId(List<SUITBytes> suitBytesList)
+    {
+        this.componentIds = suitBytesList;
+    }
 
-        [JsonPropertyName("image-digest")]
-        public string ImageDigest { get; set; }
-        public string Id { get; set; } 
-        public SUITComponentId()
+    public Dictionary<string, object> ToSUIT()
+    {
+        return new Dictionary<string, object>
         {
-        }
-        public void InitializeRandomData()
-        {
-            Random random = new Random();
+            { "component_id", componentIds.ConvertAll(item => item.v) }
+        };
+    }
 
-            VendorId = Guid.NewGuid().ToString();
-            ClassId = Guid.NewGuid().ToString();
-            ImageDigest = Guid.NewGuid().ToString(); 
-            Id = Guid.NewGuid().ToString(); 
-        }
+    public SUITComponentId FromSUIT(List<object> cborObject)
+    {
+        componentIds.Clear();
 
-        public string ToJson()
+        foreach (var item in cborObject)
         {
-            var options = new JsonSerializerOptions
+            if (item is Dictionary<string, object> suitDict && suitDict.ContainsKey("hex") && suitDict["hex"] is byte[] byteArray)
             {
-                WriteIndented = true
-            };
-            return JsonSerializer.Serialize(this, options);
-        }
-
-        public static SUITComponentId FromJson(string json)
-        {
-            return JsonSerializer.Deserialize<SUITComponentId>(json);
-        }
-
-        public CBORObject ToSUIT()
-        {
-            var cborMap = CBORObject.NewMap();
-            cborMap.Add("vendor-id", VendorId);
-            cborMap.Add("class-id", ClassId);
-            cborMap.Add("image-digest", ImageDigest);
-            cborMap.Add("Id", Id); 
-
-            return cborMap;
-        }
-
-
-
-        public static SUITComponentId FromSUIT(CBORObject cborObject)
-        {
-            if (cborObject == null || cborObject.Type != CBORType.Map)
-            {
-                throw new ArgumentException("Invalid CBOR object or type.");
+                componentIds.Add(new SUITBytes { v = byteArray });
             }
-
-            var componentId = new SUITComponentId();
-            foreach (var key in cborObject.Keys)
+            else
             {
-                switch (key.AsString())
+                throw new ArgumentException("Invalid object type within the list.");
+            }
+        }
+
+        return this;
+    }
+
+    public Dictionary<string, object> ToJson()
+    {
+        var jsonList = componentIds.ConvertAll(item => Encoding.UTF8.GetString(item.v));
+        return new Dictionary<string, object>
+        {
+            { "component_id", jsonList }
+        };
+    }
+
+    public SUITComponentId FromSUIT(Dictionary<string, object> suitDict)
+    {
+        throw new NotImplementedException();
+    }
+
+    public SUITComponentId FromJson(Dictionary<string, object> jsonData)
+    {
+        componentIds.Clear();
+
+        if (jsonData == null)
+        {
+            throw new ArgumentNullException(nameof(jsonData));
+        }
+
+        if (jsonData.TryGetValue("component_id", out var componentIdValue))
+        {
+            if (componentIdValue is int singleIntValue)
+            {
+                // Handle the case where "component_id" is a single integer
+                componentIds.Add(new SUITBytes { v = BitConverter.GetBytes(singleIntValue) });
+            }
+            else if (componentIdValue is List<object> jsonList)
+            {
+                // Handle the case where "component_id" is a list of integers
+                foreach (var item in jsonList)
                 {
-                    case "vendor-id":
-                        componentId.VendorId = cborObject[key].AsString();
-                        break;
-                    case "class-id":
-                        componentId.ClassId = cborObject[key].AsString();
-                        break;
-                    case "image-digest":
-                        componentId.ImageDigest = cborObject[key].AsString();
-                        break;
-                    case "Id":
-                        componentId.Id = cborObject[key].AsString();
-                        break;
-                    default:
-                        break;
+                    if (item is int intValue)
+                    {
+                        componentIds.Add(new SUITBytes { v = BitConverter.GetBytes(intValue) });
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid value type within the JSON list.");
+                    }
                 }
+            }   
+            else
+            {
+                throw new ArgumentException("Invalid value type for 'component_id' in JSON.");
             }
-
-            return componentId;
+        }
+        else
+        {
+            throw new ArgumentException("Missing 'component_id' in JSON.");
         }
 
+        return this;
+    }
+
+    public string ToDebug(string indent)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"{indent}Component ID:");
+        foreach (var componentId in componentIds)
+        {
+            sb.AppendLine($"{indent}  {Encoding.UTF8.GetString(componentId.v)}");
+        }
+        return sb.ToString();
     }
 }
-
-    public class SUITComponentText
-    {
-        [JsonPropertyName("vendor-name")] public string? VendorName { get; set; }
-
-        [JsonPropertyName("model-name")] public string? ModelName { get; set; }
-
-        [JsonPropertyName("vendor-domain")] public string? VendorDomain { get; set; }
-
-        [JsonPropertyName("json-source")] public string? JsonSource { get; set; }
-
-        [JsonPropertyName("component-description")]
-        public string? ComponentDescription { get; set; }
-
-        [JsonPropertyName("version")] public string? Version { get; set; }
-
-        [JsonPropertyName("required-version")] public string? RequiredVersion { get; set; }
-
-        public string ToJson()
-        {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-            return JsonSerializer.Serialize(this, options);
-        }
-
-        public static SUITComponentText FromJson(string json)
-        {
-            return JsonSerializer.Deserialize<SUITComponentText>(json);
-        }
-
-        public Dictionary<object, object?> ToSUIT()
-        {
-            return new Dictionary<object, object?>
-            {
-                { "vendor-name", VendorName },
-                { "model-name", ModelName },
-                { "vendor-domain", VendorDomain },
-                { "json-source", JsonSource },
-                { "component-description", ComponentDescription },
-                { "version", Version },
-                { "required-version", RequiredVersion }
-            };
-        }
-
-        public void FromSUIT(Dictionary<string, object> suitDict)
-        {
-            VendorName = GetStringFromSUITDict(suitDict, "vendor-name");
-            ModelName = GetStringFromSUITDict(suitDict, "model-name");
-            VendorDomain = GetStringFromSUITDict(suitDict, "vendor-domain");
-            JsonSource = GetStringFromSUITDict(suitDict, "json-source");
-            ComponentDescription = GetStringFromSUITDict(suitDict, "component-description");
-            Version = GetStringFromSUITDict(suitDict, "version");
-            RequiredVersion = GetStringFromSUITDict(suitDict, "required-version");
-        }
-
-        private string GetStringFromSUITDict(Dictionary<string, object> suitDict, string key)
-        {
-            if (suitDict.TryGetValue(key, out var value) && value is CBORObject cborString)
-            {
-                return cborString.AsString();
-            }
-            return null;
-        }
-    }
-
-/*
-public class Program
-{
-    public static void Main(string[] args)
-    {
-        var componentText = new SUITComponentText
-        {
-            VendorName = "Vendor",
-            ModelName = "Model",
-            VendorDomain = "example.com",
-            JsonSource = "{\"key\": \"value\"}",
-            ComponentDescription = "Component description",
-            Version = "1.0",
-            RequiredVersion = "1.0"
-        };
-
-        var suitText = new SUITText
-        {
-            ManifestDescription = "Manifest description",
-           
-*/

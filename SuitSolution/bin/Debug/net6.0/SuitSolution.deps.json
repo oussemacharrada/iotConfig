@@ -8,9 +8,11 @@
     ".NETCoreApp,Version=v6.0": {
       "SuitSolution/1.0.0": {
         "dependencies": {
+          "Bogus": "34.0.2",
           "BouncyCastle": "1.8.9",
           "CommandLineParser": "2.9.1",
           "Dahomey.Cbor": "1.20.1",
+          "MessagePack": "2.6.100-alpha",
           "Microsoft.NET.Test.Sdk": "16.5.0-preview-20191115-01",
           "Newtonsoft.Json": "13.0.3",
           "NuGet.Frameworks": "6.5.0",
@@ -21,6 +23,14 @@
         },
         "runtime": {
           "SuitSolution.dll": {}
+        }
+      },
+      "Bogus/34.0.2": {
+        "runtime": {
+          "lib/net6.0/Bogus.dll": {
+            "assemblyVersion": "34.0.2.0",
+            "fileVersion": "34.0.2.0"
+          }
         }
       },
       "BouncyCastle/1.8.9": {
@@ -50,11 +60,44 @@
           }
         }
       },
+      "MessagePack/2.6.100-alpha": {
+        "dependencies": {
+          "MessagePack.Annotations": "2.6.100-alpha",
+          "Microsoft.NET.StringTools": "17.4.0",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        },
+        "runtime": {
+          "lib/net6.0/MessagePack.dll": {
+            "assemblyVersion": "2.6.0.0",
+            "fileVersion": "2.6.100.28020"
+          }
+        }
+      },
+      "MessagePack.Annotations/2.6.100-alpha": {
+        "runtime": {
+          "lib/netstandard2.0/MessagePack.Annotations.dll": {
+            "assemblyVersion": "2.6.0.0",
+            "fileVersion": "2.6.100.28020"
+          }
+        }
+      },
       "Microsoft.CodeCoverage/16.5.0-preview-20191115-01": {
         "runtime": {
           "lib/netcoreapp1.0/Microsoft.VisualStudio.CodeCoverage.Shim.dll": {
             "assemblyVersion": "15.0.0.0",
             "fileVersion": "16.0.28223.3002"
+          }
+        }
+      },
+      "Microsoft.NET.StringTools/17.4.0": {
+        "dependencies": {
+          "System.Memory": "4.5.5",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.NET.StringTools.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "17.4.0.51802"
           }
         }
       },
@@ -662,6 +705,7 @@
           "System.Threading": "4.3.0"
         }
       },
+      "System.Memory/4.5.5": {},
       "System.Net.Http/4.3.0": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.1.0",
@@ -788,6 +832,7 @@
           "Microsoft.NETCore.Targets": "1.1.0"
         }
       },
+      "System.Runtime.CompilerServices.Unsafe/6.0.0": {},
       "System.Runtime.Extensions/4.3.0": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.1.0",
@@ -1112,6 +1157,13 @@
       "serviceable": false,
       "sha512": ""
     },
+    "Bogus/34.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-2KQAuMn3fLAQ2r6jeiffZnpv0bi3GCW3iRB2v1KeHIEBu8MNTh9dBlLTZwGvM0pr+9doKkU8L5JgCURmTmT88A==",
+      "path": "bogus/34.0.2",
+      "hashPath": "bogus.34.0.2.nupkg.sha512"
+    },
     "BouncyCastle/1.8.9": {
       "type": "package",
       "serviceable": true,
@@ -1133,12 +1185,33 @@
       "path": "dahomey.cbor/1.20.1",
       "hashPath": "dahomey.cbor.1.20.1.nupkg.sha512"
     },
+    "MessagePack/2.6.100-alpha": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-gAyxBDzMDLWVg8GGP3YS4M2WnpglwcZzEld9HEsqVYNsTtVELZidINr/TTxVyfnHXxyEiZy04czZDdq8Q02hQw==",
+      "path": "messagepack/2.6.100-alpha",
+      "hashPath": "messagepack.2.6.100-alpha.nupkg.sha512"
+    },
+    "MessagePack.Annotations/2.6.100-alpha": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-hl8OTk87/i4nMHtBasV+GRQe8g3tze3l6NGYmL4XOQwCATKLAFAIKRbaxxWAPo0wk26UPqJ7oC+Lg8fLQNWLAQ==",
+      "path": "messagepack.annotations/2.6.100-alpha",
+      "hashPath": "messagepack.annotations.2.6.100-alpha.nupkg.sha512"
+    },
     "Microsoft.CodeCoverage/16.5.0-preview-20191115-01": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-x5ZQ3T+eeCb4uwGWUEck060o01aTkPeWJRVKZrOr2Qma0QDNe5ux7a+SwuhNKrLUnAn3airf+Ka5d+xy4vZ/0g==",
       "path": "microsoft.codecoverage/16.5.0-preview-20191115-01",
       "hashPath": "microsoft.codecoverage.16.5.0-preview-20191115-01.nupkg.sha512"
+    },
+    "Microsoft.NET.StringTools/17.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-06T6Hqfs3JDIaBvJaBRFFMIdU7oE0OMab5Xl8LKQjWPxBQr3BgVFKMQPTC+GsSEuYREWmK6g5eOd7Xqd9p1YCA==",
+      "path": "microsoft.net.stringtools/17.4.0",
+      "hashPath": "microsoft.net.stringtools.17.4.0.nupkg.sha512"
     },
     "Microsoft.NET.Test.Sdk/16.5.0-preview-20191115-01": {
       "type": "package",
@@ -1483,6 +1556,13 @@
       "path": "system.linq.expressions/4.3.0",
       "hashPath": "system.linq.expressions.4.3.0.nupkg.sha512"
     },
+    "System.Memory/4.5.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw==",
+      "path": "system.memory/4.5.5",
+      "hashPath": "system.memory.4.5.5.nupkg.sha512"
+    },
     "System.Net.Http/4.3.0": {
       "type": "package",
       "serviceable": true,
@@ -1573,6 +1653,13 @@
       "sha512": "sha512-JufQi0vPQ0xGnAczR13AUFglDyVYt4Kqnz1AZaiKZ5+GICq0/1MH/mO/eAJHt/mHW1zjKBJd7kV26SrxddAhiw==",
       "path": "system.runtime/4.3.0",
       "hashPath": "system.runtime.4.3.0.nupkg.sha512"
+    },
+    "System.Runtime.CompilerServices.Unsafe/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg==",
+      "path": "system.runtime.compilerservices.unsafe/6.0.0",
+      "hashPath": "system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
     },
     "System.Runtime.Extensions/4.3.0": {
       "type": "package",

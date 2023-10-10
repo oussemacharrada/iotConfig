@@ -1,139 +1,231 @@
+using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using PeterO.Cbor;
-using SuitSolution.Services.SuitSolution.Services;
-namespace SuitSolution.Services
+using System.Text;
+using Newtonsoft.Json;
+using SuitSolution.Interfaces;
+
+public class SUITText : SUITManifestDict, ISUITConvertible<SUITText>
 {
-    public class SUITText : ISUITConvertible
+    public SUITText()
     {
-        [JsonPropertyName("languages")]
-        public List<string> Languages { get; set; }
+        mdesc = new SUITTStr();
+        udesc = new SUITTStr();
+        json = new SUITTStr();
+        yaml = new SUITTStr();
 
-        [JsonPropertyName("texts")]
-        public List<string> Texts { get; set; }
-
-        public SUITText()
-        {
-            Languages = new List<string>();
-            Texts = new List<string>();
-        }
-        public void InitializeRandomData()
-        {
-            Languages = new List<string>
-            {
-                "en", "fr", "es" 
-            };
-
-            Texts = new List<string>
-            {
-                "Sample text 1", "Sample text 2", "Sample text 3" 
-            };
-        }
-
-        public CBORObject ToCBOR()
-        {
-            var cborObject = CBORObject.NewMap();
-            cborObject.Add("languages", Languages);
-            cborObject.Add("texts", Texts);
-            return cborObject;
-        }
-
-        public void FromCBOR(CBORObject cborObject)
-        {
-            Languages = cborObject["languages"].Values.Select(l => l.AsString()).ToList();
-            Texts = cborObject["texts"].Values.Select(t => t.AsString()).ToList();
-        }
-
-        public List<object> ToSUIT()
-        {
-            var suitList = new List<object>
-            {
-                Languages,
-                Texts
-            };
-
-            return suitList;
-        }
-
-        public void FromSUIT(List<object> suitList)
-        {
-            if (suitList == null || suitList.Count < 2)
-            {
-                throw new ArgumentException("Invalid SUIT list.");
-            }
-
-            if (suitList[0] is CBORObject languagesObject)
-            {
-                Languages = new List<string> { languagesObject.ToJSONString() }; 
-            }
-            else
-            {
-                throw new ArgumentException("Invalid format for 'languages' in SUITText.");
-            }
-
-            if (suitList[1] is CBORObject textsObject)
-            {
-                Texts = new List<string> { textsObject.ToJSONString() };
-            }
-            else
-            {
-                throw new ArgumentException("Invalid format for 'texts' in SUITText.");
-            }
-        }
-
-
+        components = new Dictionary<SUITComponentId, SUITComponentText>();
     }
-    public class SUITTextBuilder
+
+    public SUITTStr mdesc { get; set; }
+    public SUITTStr udesc { get; set; }
+    public SUITTStr json { get; set; }
+    public SUITTStr yaml { get; set; }
+
+    public byte[] ConvertSUITTextToByteArray()
     {
-        private SUITText suitText;
+        string jsonString = JsonConvert.SerializeObject(this);
+        byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonString);
+        return jsonBytes;
+    }
 
-        public SUITTextBuilder()
+    public Dictionary<SUITComponentId, SUITComponentText> components { get; set; }
+
+    public SUITText FromSUIT(Dictionary<string, object> suitDict)
+    {
+        if (suitDict == null)
         {
-            suitText = new SUITText();
+            throw new ArgumentNullException(nameof(suitDict));
         }
 
-        public SUITTextBuilder SetLanguages(List<string> languages)
+        // Process main fields
+        if (suitDict.TryGetValue("mdesc", out var mdescValue) && mdescValue is string mdescStr)
         {
-            suitText.Languages = languages ?? throw new ArgumentNullException(nameof(languages));
-            return this;
+            mdesc = new SUITTStr { v = mdescStr };
         }
 
-        public SUITTextBuilder SetTexts(List<string> texts)
+        if (suitDict.TryGetValue("udesc", out var udescValue) && udescValue is string udescStr)
         {
-            suitText.Texts = texts ?? throw new ArgumentNullException(nameof(texts));
-            return this;
+            udesc = new SUITTStr { v = udescStr };
         }
 
-        public SUITTextBuilder InitializeRandomData()
+        if (suitDict.TryGetValue("json", out var jsonValue) && jsonValue is string jsonStr)
         {
-            suitText.InitializeRandomData();
-            return this;
+            json = new SUITTStr { v = jsonStr };
         }
 
-        public SUITText Build()
+        if (suitDict.TryGetValue("yaml", out var yamlValue) && yamlValue is string yamlStr)
         {
-            return suitText;
+            yaml = new SUITTStr { v = yamlStr };
         }
 
-        public string ToJson()
+        if (suitDict.TryGetValue("components", out var componentsValue) && componentsValue is List<object> componentsList)
         {
-            var options = new JsonSerializerOptions
+            components = new Dictionary<SUITComponentId, SUITComponentText>();
+            foreach (var componentObj in componentsList)
             {
-                WriteIndented = true
-            };
-            return JsonSerializer.Serialize(suitText, options);
+                if (componentObj is Dictionary<string, object> componentDict)
+                {
+                    if (componentDict.TryGetValue("component_id", out var componentIdObj) && componentIdObj is Dictionary<string, object> componentIdDict)
+                    {
+                        var componentId = new SUITComponentId();
+                        componentId.FromSUIT(componentIdDict);
+
+                        if (componentDict.TryGetValue("component_text", out var componentTextObj) && componentTextObj is Dictionary<string, object> componentTextDict)
+                        {
+                            var componentText = new SUITComponentText();
+                            componentText.FromSUIT(componentTextDict);
+                            components.Add(componentId, componentText);
+                        }
+                    }
+                }
+            }
         }
 
-        public static SUITTextBuilder FromJson(string json)
+        base.FromSUIT(suitDict);
+
+        return this;
+    }
+
+    public SUITText FromJson(Dictionary<string, object> jsonData)
+    {
+        if (jsonData == null)
         {
-            return new SUITTextBuilder().SetSUITText(JsonSerializer.Deserialize<SUITText>(json));
+            throw new ArgumentNullException(nameof(jsonData));
         }
 
-        public SUITTextBuilder SetSUITText(SUITText existingSUITText)
+        if (jsonData.TryGetValue("mdesc", out var mdescValue) && mdescValue is string mdescStr)
         {
-            suitText = existingSUITText ?? throw new ArgumentNullException(nameof(existingSUITText));
-            return this;
+            mdesc = new SUITTStr { v = mdescStr };
         }
+
+        if (jsonData.TryGetValue("udesc", out var udescValue) && udescValue is string udescStr)
+        {
+            udesc = new SUITTStr { v = udescStr };
+        }
+
+        if (jsonData.TryGetValue("json", out var jsonValue) && jsonValue is string jsonStr)
+        {
+            json = new SUITTStr { v = jsonStr };
+        }
+
+        if (jsonData.TryGetValue("yaml", out var yamlValue) && yamlValue is string yamlStr)
+        {
+            yaml = new SUITTStr { v = yamlStr };
+        }
+
+        if (jsonData.TryGetValue("components", out var componentsValue) && componentsValue is List<object> componentsList)
+        {
+            components = new Dictionary<SUITComponentId, SUITComponentText>();
+            foreach (var componentObj in componentsList)
+            {
+                if (componentObj is Dictionary<string, object> componentDict)
+                {
+                    if (componentDict.TryGetValue("component_id", out var componentIdObj) && componentIdObj is Dictionary<string, object> componentIdDict)
+                    {
+                        var componentId = new SUITComponentId();
+                        componentId.FromSUIT(componentIdDict);
+
+                        if (componentDict.TryGetValue("component_text", out var componentTextObj) && componentTextObj is Dictionary<string, object> componentTextDict)
+                        {
+                            var componentText = new SUITComponentText();
+                            componentText.FromSUIT(componentTextDict);
+                            components.Add(componentId, componentText);
+                        }
+                    }
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public new List<object> ToSUIT()
+    {
+        var suitList = new List<object>();
+
+        foreach (var kvp in components)
+        {
+            var keyList = kvp.Key.ToSUIT().Select(k => k.ToString()).ToList();
+            string selectedKey = null;
+
+            foreach (var key in keyList)
+            {
+                if (int.TryParse(key, out int index) && index >= 0 && index < keyList.Count)
+                {
+                    selectedKey = keyList[index];
+                    break;
+                }
+            }
+
+            if (selectedKey != null)
+            {
+                var componentDict = new Dictionary<string, object>
+                {
+                    { selectedKey, kvp.Value.ToSUIT() }
+                };
+                suitList.Add(componentDict);
+            }
+        }
+
+        var baseProperties = base.ToSUIT();
+        if (baseProperties.Count > 0)
+        {
+            var baseDict = new Dictionary<string, object>();
+            foreach (var prop in baseProperties)
+            {
+                if (prop is KeyValuePair<string, object> kvp)
+                {
+                    baseDict.Add(kvp.Key, kvp.Value);
+                }
+            }
+            suitList.Add(baseDict);
+        }
+
+        return suitList;
+    }
+
+    public new Dictionary<string, object> ToJson()
+    {
+        var jsonData = new Dictionary<string, object>();
+
+        if (mdesc != null)
+        {
+            jsonData["mdesc"] = mdesc.v;
+        }
+
+        if (udesc != null)
+        {
+            jsonData["udesc"] = udesc.v;
+        }
+
+        if (json != null)
+        {
+            jsonData["json"] = json.v;
+        }
+
+        if (yaml != null)
+        {
+            jsonData["yaml"] = yaml.v;
+        }
+
+        if (components != null)
+        {
+            var componentsList = new List<object>();
+            foreach (var kvp in components)
+            {
+                var componentDict = new Dictionary<string, object>();
+                componentDict["component_id"] = kvp.Key.ToSUIT();
+                componentDict["component_text"] = kvp.Value.ToSUIT();
+                componentsList.Add(componentDict);
+            }
+            jsonData["components"] = componentsList;
+        }
+
+        return jsonData;
+    }
+
+    public new string ToDebug(string indent)
+    {
+        throw new NotImplementedException();
     }
 }

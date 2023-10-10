@@ -1,214 +1,113 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
+using Newtonsoft.Json;
+using SuitSolution.Interfaces;
 using PeterO.Cbor;
-using SuitSolution.Services.SuitSolution.Services;
-
 namespace SuitSolution.Services
 {
-    public class SUITCommon : ISUITConvertible
+    public class SUITCommon : SUITManifestDict, ISUITConvertible<SUITCommon>
     {
-        public int Sequence { get; set; }
-        public List<int> Install { get; set; }
-        public List<int> Validate { get; set; }
+        public SUITBWrapField<SUITDependencies> dependencies { get; set; } = new SUITBWrapField<SUITDependencies>();
+        public SUITComponents components { get; set; }= new SUITComponents();
+        public SUITBWrapField<SUITSequenceComponentReset> commonSequence { get; set; }= new SUITBWrapField<SUITSequenceComponentReset>();
 
-        public CBORObject ToCbor()
+        public SUITCommon()
         {
-            var cborObject = CBORObject.NewMap();
-            cborObject.Add("sequence", Sequence);
-
-            if (Install != null)
-            {
-                var installArray = CBORObject.NewArray();
-                foreach (var item in Install)
-                {
-                    installArray.Add(item);
-                }
-                cborObject.Add("install", installArray);
-            }
-
-            if (Validate != null)
-            {
-                var validateArray = CBORObject.NewArray();
-                foreach (var item in Validate)
-                {
-                    validateArray.Add(item);
-                }
-                cborObject.Add("validate", validateArray);
-            }
-
-            return cborObject;
+            fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields(
+                ("dependencies", "1", () => dependencies),
+                ("components", "2", () => components),
+                ("common-sequence", "4", () => commonSequence)
+            ));
         }
-        public List<object> ToSUIT()
+        
+        private List<object> DeserializeComponents(byte[] data)
         {
-            var suitList = new List<object>
+            try
             {
-                Sequence
-            };
-
-            if (Install != null)
-            {
-                var installList = Install.Cast<object>().ToList();
-                suitList.Add(installList);
+                var jsonString = Encoding.UTF8.GetString(data);
+                var componentsList = JsonConvert.DeserializeObject<List<object>>(jsonString);
+                return componentsList;
             }
-            else
+            catch (Exception ex)
             {
-                suitList.Add(null);
-            }
-
-            if (Validate != null)
-            {
-                var validateList = Validate.Cast<object>().ToList();
-                suitList.Add(validateList);
-            }
-            else
-            {
-                suitList.Add(null);
-            }
-
-            return suitList;
-        }
-
-        public void FromSUIT(List<Object> suitList)
-        {
-            if (suitList == null || suitList.Count < 1)
-            {
-                throw new ArgumentException("Invalid SUIT list.");
-            }
-
-            Sequence = (int)suitList[0];
-
-            if (suitList.Count > 1 && suitList[1] != null)
-            {
-                Install = ((List<object>)suitList[1]).Cast<int>().ToList();
-            }
-            else
-            {
-                Install = null;
-            }
-
-            if (suitList.Count > 2 && suitList[2] != null)
-            {
-                Validate = ((List<object>)suitList[2]).Cast<int>().ToList();
-            }
-            else
-            {
-                Validate = null;
+                Console.WriteLine($"Error deserializing components: {ex.Message}");
+                return null;
             }
         }
-
-
-        public void FromCBOR(CBORObject cborObject)
-        {
-            if (cborObject == null || cborObject.Type != CBORType.Map)
-            {
-                throw new ArgumentException("Invalid CBOR object or type.");
-            }
-
-            Sequence = cborObject["sequence"].AsInt32();
-
-            if (cborObject.ContainsKey("install"))
-            {
-                Install = new List<int>();
-                foreach (var item in cborObject["install"].Values)
-                {
-                    Install.Add(item.AsInt32());
-                }
-            }
-            else
-            {
-                Install = null;
-            }
-
-            if (cborObject.ContainsKey("validate"))
-            {
-                Validate = new List<int>();
-                foreach (var item in cborObject["validate"].Values)
-                {
-                    Validate.Add(item.AsInt32());
-                }
-            }
-            else
-            {
-                Validate = null;
-            }
-        }
-        public Dictionary<object, object> ToSUITDict()
-        {
-            var suitDict = new Dictionary<object, object>
-            {
-                { "sequence", Sequence }
-            };
-
-            if (Install != null)
-            {
-                suitDict.Add("install", Install);
-            }
-            else
-            {
-                suitDict.Add("install", null);
-            }
-
-            if (Validate != null)
-            {
-                suitDict.Add("validate", Validate);
-            }
-            else
-            {
-                suitDict.Add("validate", null);
-            }
-
-            return suitDict;
-        }
-        public void InitializeRandomData()
-        {
-            Random random = new Random();
-
-            Sequence = random.Next(1, 101);
-
-            int installCount = random.Next(0, 5); 
-            Install = new List<int>();
-            for (int i = 0; i < installCount; i++)
-            {
-                Install.Add(random.Next(1, 101)); 
-            }
-
-            int validateCount = random.Next(0, 5); 
-            Validate = new List<int>();
-            for (int i = 0; i < validateCount; i++)
-            {
-                Validate.Add(random.Next(1, 101));
-            }
-        }
-
-        public void FromSUITDict(Dictionary<object, object> suitDict)
+      
+        public SUITCommon FromSUIT(Dictionary<string, object> suitDict)
         {
             if (suitDict == null)
             {
                 throw new ArgumentNullException(nameof(suitDict));
             }
 
-            if (suitDict.TryGetValue("sequence", out var sequenceValue) && sequenceValue is int sequence)
+            if (suitDict.TryGetValue("dependencies", out var dependenciesValue) && dependenciesValue is List<object> dependenciesList)
             {
-                Sequence = sequence;
-            }
-
-            if (suitDict.TryGetValue("install", out var installValue) && installValue is List<object> installList)
-            {
-                Install = installList.OfType<int>().ToList();
+                var dependenciesLists = SerializationHelper.SerializeToBytes(dependenciesList);
+                dependencies.FromSUIT(dependenciesLists);
             }
             else
             {
-                Install = null;
+                throw new ArgumentException("Invalid SUIT data for SUITCommon: missing or invalid 'dependencies' field.");
             }
 
-            if (suitDict.TryGetValue("validate", out var validateValue) && validateValue is List<object> validateList)
+            if (suitDict.TryGetValue("components", out var componentsValue) && componentsValue is List<object> componentsList)
             {
-                Validate = validateList.OfType<int>().ToList();
+                components.FromSUIT(componentsList);
             }
             else
             {
-                Validate = null;
+                throw new ArgumentException("Invalid SUIT data for SUITCommon: missing or invalid 'components' field.");
             }
+
+
+
+            if (suitDict.TryGetValue("common-sequence", out var commonSeqValue) && commonSeqValue is List<object> commonSeqList)
+            {
+                var commonSeqLists = SerializationHelper.SerializeToBytes(commonSeqList);
+                commonSequence.FromSUIT(commonSeqLists); 
+            }
+            else
+            {
+                throw new ArgumentException("Invalid SUIT data for SUITCommon: missing or invalid 'common-sequence' field.");
+            }
+
+            return this;
+        }
+
+
+        public SUITCommon FromJson(Dictionary<string, object> jsonData)
+        {
+            throw new NotImplementedException();
+        }
+     
+     
+
+
+      
+
+        public Dictionary<string, object> ToJson()
+        {
+            var commonDict = new Dictionary<string, object>();
+            foreach (var fieldInfo in fields.Values)
+            {
+                var fieldName = fieldInfo.json_key;
+                var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
+                if (fieldValue != null)
+                {
+                    var suitKey = fieldInfo.suit_key;
+                    var suitValue = (fieldValue as dynamic).ToJson();
+                    commonDict[suitKey] = suitValue;
+                }
+            }
+            return new Dictionary<string, object>
+            {
+                { "common", commonDict }
+            };
         }
     }
 }

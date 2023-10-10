@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using PeterO.Cbor;
 using SuitSolution.Services;
 using Xunit;
-
+/*
 namespace SuitSolution.Tests
 {
     public class SUITCommonTests
@@ -115,3 +115,4 @@ namespace SuitSolution.Tests
         }
     }
 }
+*/

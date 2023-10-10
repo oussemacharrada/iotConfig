@@ -1,165 +1,115 @@
-
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using PeterO.Cbor;
+using System.Linq;
 using SuitSolution.Interfaces;
-namespace SuitSolution.Services;
 
- public interface ISUITManifestItem
-    {
-        bool Equals(ISUITManifestItem other);
-        ISUITManifestItem FromJson(string json);
-        string ToJson();
-        ISUITManifestItem FromSUIT(CBORObject data);
-        CBORObject ToSUIT();
-        void Append(ISUITManifestItem element);
-        string ToDebug(string indent);
-    }
-
-/*public class SUITManifestArray : ISUITManifestItem
+public class SUITManifestArray<T> where T : new()
 {
-    protected List<ISUITManifestItem> Items { get; set; }
+    public readonly string one_indent = "    ";
+
+    public List<T> items;
 
     public SUITManifestArray()
     {
-        Items = new List<ISUITManifestItem>();
+        items = new List<T>();
     }
 
-    public bool Equals(SUITManifestArray other)
+    public bool Equals(SUITManifestArray<T> rhs)
     {
-        if (ReferenceEquals(this, other)) return true;
-        if (ReferenceEquals(null, other)) return false;
-        if (Items.Count != other.Items.Count) return false;
+        if (!GetType().Equals(rhs.GetType()))
+            return false;
 
-        for (int i = 0; i < Items.Count; i++)
+        if (items.Count != rhs.items.Count)
+            return false;
+
+        for (int i = 0; i < items.Count; i++)
         {
-            if (!Items[i].Equals(other.Items[i]))
-            {
+            if (!items[i].Equals(rhs.items[i]))
                 return false;
-            }
         }
 
         return true;
     }
 
-    public bool Equals(ISUITManifestItem other)
+    public SUITManifestArray<T> FromJson(List<object> data)
     {
-        throw new NotImplementedException();
-    }
+        items = new List<T>();
 
-    ISUITManifestItem ISUITManifestItem.FromJson(string json)
-    {
-        return FromJson(json);
-    }
-
-    public SUITManifestArray FromJson(string json)
-    {
-        Items = new List<ISUITManifestItem>();
-        var jsonArray = JsonSerializer.Deserialize<List<JsonElement>>(json);
-
-        foreach (var jsonElement in jsonArray)
+        foreach (var d in data)
         {
-            var itemType = jsonElement.GetProperty("itemType").GetString();
-
-            ISUITManifestItem newItem;
-            switch (itemType)
+            var dict = d as Dictionary<string, object>;
+            if (dict != null)
             {
-                case "COSETaggedAuth":
-                    newItem = new SUITBWrapField<CoseTaggedAuth>().FromJson(jsonElement.ToString());
-                    break;
-
-                default:
-                    throw new NotSupportedException($"Unsupported item type: {itemType}");
+                var item = new T();
+                (item as ISUITConvertible<T>)?.FromJson(dict);
+                items.Add(item);
             }
-
-            Items.Add(newItem);
         }
 
         return this;
     }
 
-    public string ToJson()
+    public List<object> ToJson()
     {
-        var jsonElements = new List<JsonElement>();
+        var jsonList = new List<object>();
 
-        foreach (var item in Items)
+        foreach (var item in items)
         {
-            if (item is SUITBWrapField<CoseTaggedAuth> coseTaggedAuthItem)
+            var suitConvertible = item as ISUITConvertible<T>;
+            if (suitConvertible != null)
             {
-                var jsonElement = coseTaggedAuthItem.ToJsonElement();
-                jsonElement.GetProperty("itemType").GetString();
-                jsonElements.Add(jsonElement);
+                jsonList.Add(suitConvertible.ToJson());
             }
         }
 
-        return JsonSerializer.Serialize(jsonElements);
+        return jsonList;
     }
 
-    ISUITManifestItem ISUITManifestItem.FromSUIT(CBORObject data)
+    public SUITManifestArray<T> FromSUIT(List<object> data)
     {
-        return FromSUIT(data);
-    }
+        items = new List<T>();
 
-    public SUITManifestArray FromSUIT(CBORObject data)
-    {
-        Items = new List<ISUITManifestItem>();
-
-        foreach (var cborItem in data.Values)
+        foreach (var d in data)
         {
-            var itemType = cborItem["itemType"].AsString();
-
-            ISUITManifestItem newItem;
-            switch (itemType)
+            var dict = d as Dictionary<string, object>;
+            if (dict != null)
             {
-                case "COSETaggedAuth":
-                    newItem = new SUITBWrapField<CoseTaggedAuth>().FromSUIT(cborItem);
-                    break;
-
-                default:
-                    throw new NotSupportedException($"Unsupported item type: {itemType}");
+                var item = new T();
+                (item as ISUITConvertible<T>)?.FromSUIT(dict);
+                items.Add(item);
             }
-
-            Items.Add(newItem);
         }
 
         return this;
     }
 
-    public CBORObject ToSUIT()
+    public List<Dictionary<string, object>> ToSuit()
     {
-        var cborArray = CBORObject.NewArray();
+        var suitList = new List<Dictionary<string, object>>();
 
-        foreach (var item in Items)
+        foreach (var item in items)
         {
-            if (item is SUITBWrapField<CoseTaggedAuth> coseTaggedAuthItem)
+            var suitConvertible = item as ISUITConvertible<T>;
+            if (suitConvertible != null)
             {
-                cborArray.Add(coseTaggedAuthItem.ToSUIT());
+                suitList.Add(suitConvertible.ToSUIT());
             }
         }
 
-        return cborArray;
+        return suitList;
     }
 
-    public void Append(ISUITManifestItem element)
-    {
-        if (!ReferenceEquals(element.GetType(), typeof(SUITBWrapField<CoseTaggedAuth>)))
-        {
-            throw new Exception($"element {element} is not a {typeof(SUITBWrapField<CoseTaggedAuth>)}");
-        }
 
-        Items.Add(element);
+    public void append(T element)
+    {
+        items.Add(element);
     }
 
-    public string ToDebug(string indent)
+    public string to_debug(string indent)
     {
-        var newIndent = indent + "  ";
-        var s = "[\n";
-
-        s += string.Join(",\n", Items.ConvertAll(item => newIndent + item.ToDebug(newIndent))) + "\n";
-        s += indent + "]";
-
+        var newIndent = indent + one_indent;
+        var debugList = items.Select(item => $"{newIndent}{(item as ISUITConvertible<T>)?.ToDebug(newIndent)}").ToList();
+        var s = $"[\n{string.Join(",\n", debugList)}\n{indent}]";
         return s;
     }
-}*/
+}

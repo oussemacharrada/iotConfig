@@ -1,66 +1,103 @@
+using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using PeterO.Cbor;
+using SuitSolution.Interfaces;
 
 namespace SuitSolution.Services
 {
-    
-    public class SUITDependencies
+    public class SUITDependencies : List<SUITDependency>, ISUITConvertible<SUITDependencies>
     {
-        [JsonPropertyName("dependencies")]
-        public List<SUITDependency> Dependencies { get; set; }
-
-        public SUITDependencies()
+        public new SUITDependencies FromSUIT(Dictionary<string, object> suitDict)
         {
-            Dependencies = new List<SUITDependency>();
-        }
-        public void InitializeRandomData(int numberOfDependencies)
-        {
-            Dependencies.Clear();
-
-            for (int i = 0; i < numberOfDependencies; i++)
+            if (suitDict == null)
             {
-                var dependency = new SUITDependency();
-
-                dependency.InitializeRandomData();
-
-                Dependencies.Add(dependency);
+                throw new ArgumentNullException(nameof(suitDict), "Invalid SUIT data for SUITDependencies.");
             }
+
+            // Clear the existing list before adding new dependencies
+            this.Clear();
+
+            if (suitDict.ContainsKey("dependencies") && suitDict["dependencies"] is List<object> dependencyList)
+            {
+                foreach (var dependencyData in dependencyList)
+                {
+                    if (dependencyData is Dictionary<string, object> dependencyDict)
+                    {
+                        var dependency = new SUITDependency();
+                        dependency.FromSUIT(dependencyDict);
+                        this.Add(dependency);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid object type within the 'dependencies' list.");
+                    }
+                }
+            }
+
+            return this;
         }
 
-        public string ToJson()
+        public new SUITDependencies FromJson(Dictionary<string, object> jsonData)
         {
-            var options = new JsonSerializerOptions
+            if (jsonData == null)
             {
-                WriteIndented = true
+                throw new ArgumentNullException(nameof(jsonData), "Invalid JSON data for SUITDependencies.");
+            }
+
+            // Clear the existing list before adding new dependencies
+            this.Clear();
+
+            if (jsonData.ContainsKey("dependencies") && jsonData["dependencies"] is List<object> dependencyList)
+            {
+                foreach (var dependencyData in dependencyList)
+                {
+                    if (dependencyData is Dictionary<string, object> dependencyDict)
+                    {
+                        var dependency = new SUITDependency();
+                        dependency.FromJson(dependencyDict);
+                        this.Add(dependency);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid object type within the 'dependencies' list.");
+                    }
+                }
+            }
+
+            return this;
+        }
+
+        public Dictionary<string, object> ToSUIT()
+        {
+            var suitList = new List<object>();
+            foreach (var dependency in this)
+            {
+                suitList.Add(dependency.ToSUIT());
+            }
+
+            return new Dictionary<string, object>
+            {
+                { "dependencies", suitList }
             };
-            return JsonSerializer.Serialize(this, options);
         }
 
-        public static SUITDependencies FromJson(string json)
+        public Dictionary<string, object> ToJson()
         {
-            return JsonSerializer.Deserialize<SUITDependencies>(json);
-        }
-
-        public CBORObject ToSUIT()
-        {
-            var cborArray = CBORObject.NewArray();
-            foreach (var dependency in Dependencies)
+            var jsonList = new List<object>();
+            foreach (var dependency in this)
             {
-                cborArray.Add(dependency.ToSUIT());
+                jsonList.Add(dependency.ToJson());
             }
-            return cborArray;
+
+            return new Dictionary<string, object>
+            {
+                { "dependencies", jsonList }
+            };
         }
 
-        public SUITDependencies FromSUIT(CBORObject cborArray)
+        public string ToDebug(string indent)
         {
-            var dependencies = new SUITDependencies();
-            foreach (var item in cborArray.Values)
-            {
-                dependencies.Dependencies.Add(SUITDependency.FromSUIT(item));
-            }
-            return dependencies;
+            throw new NotImplementedException();
         }
     }
 }
+

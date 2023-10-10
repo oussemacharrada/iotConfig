@@ -11,4 +11,14 @@ class SUITException : Exception
         Data = data;
         TreeBranch = treeBranch;
     }
+
+    public SUITException(string message, byte[] data)
+    {
+        throw new NotImplementedException();
+    }
+
+    public SUITException(string message)
+    {
+        throw new NotImplementedException();
+    }
 }

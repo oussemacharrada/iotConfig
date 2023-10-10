@@ -1,122 +1,157 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using PeterO.Cbor;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Collections.ObjectModel;
 using SuitSolution.Interfaces;
-using SuitSolution.Services;
-using SuitSolution.Services.SuitSolution.Services;
 
-public class SUITManifestDict : ISUITConvertible
+public class SUITManifestDict
 {
-    [JsonPropertyName("version")]
-    public int Version { get; set; }
+    public readonly string one_indent = "    ";
 
-    [JsonPropertyName("sequence")]
-    public int Sequence { get; set; }
+    public class ManifestKey
+    {
+        public string json_key { get; private set; }
+        public string suit_key { get; private set; }
+        public Func<object> ObjectFactory { get; private set; }
 
-    [JsonPropertyName("dependencies")]
-    public List<SUITDependency> Dependencies { get; set; }
+        public ManifestKey(string jsonKey, string suitKey, Func<object> objectFactory)
+        {
+            json_key = jsonKey;
+            suit_key = suitKey;
+            ObjectFactory = objectFactory;
+        }
+    }
 
-    [JsonPropertyName("dependenciesWrap")]
-    public List<SUITBWrapField<COSEList>> DependenciesWrap { get; set; }
+    public  ReadOnlyDictionary<string, ManifestKey> fields;
 
-    [JsonPropertyName("componentsWrap")]
-    public List<SUITBWrapField<COSEList>> ComponentsWrap { get; set; }
-
-    [JsonPropertyName("manifestsWrap")]
-    public List<SUITBWrapField<SUITBWrapField<CoseTaggedAuth>>> ManifestsWrap { get; set; }
+    public SUITManifestDict(params (string, string, Func<object>)[] fieldTuples)
+    {
+        fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields(fieldTuples));
+    }
 
     public SUITManifestDict()
     {
-        Dependencies = new List<SUITDependency>();
-        DependenciesWrap = new List<SUITBWrapField<COSEList>>();
-        ComponentsWrap = new List<SUITBWrapField<COSEList>>();
-        ManifestsWrap = new List<SUITBWrapField<SUITBWrapField<CoseTaggedAuth>>>();
+        fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields());
     }
 
-    public byte[] EncodeToBytes()
+    public static Dictionary<string, ManifestKey> MkFields(params (string, string, Func<object>)[] fieldTuples)
     {
-        string json = JsonSerializer.Serialize(this);
+        var fieldDict = new Dictionary<string, ManifestKey>();
 
-        return Encoding.UTF8.GetBytes(json);
-    }
-
-    public void DecodeFromBytes(byte[] bytes)
-    {
-        string json = Encoding.UTF8.GetString(bytes);
-
-        SUITManifestDict decodedObject = JsonSerializer.Deserialize<SUITManifestDict>(json);
-
-        Version = decodedObject.Version;
-        Sequence = decodedObject.Sequence;
-        Dependencies = decodedObject.Dependencies;
-        DependenciesWrap = decodedObject.DependenciesWrap;
-        ComponentsWrap = decodedObject.ComponentsWrap;
-        ManifestsWrap = decodedObject.ManifestsWrap;
-    }
-
-    public void AddRange(IEnumerable<byte[]> items)
-    {
-        foreach (var item in items)
+        for (int i = 0; i < fieldTuples.Length; i++)
         {
-            var depWrap = new SUITBWrapField<COSEList>();
-            depWrap.DecodeFromBytes(item);
+            var (fieldName, suitKey, objFunc) = fieldTuples[i];
+            fieldDict[fieldName] = new ManifestKey(fieldName, suitKey, objFunc);
+        }
 
-            DependenciesWrap.Add(depWrap);
+        return fieldDict;
+    }
+
+    public Dictionary<string, object> ToSUIT()
+    {
+        var cborMap = new Dictionary<string, object>();
+        foreach (var fieldInfo in fields.Values)
+        {
+            var fieldName = fieldInfo.json_key;
+            var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
+            if (fieldValue != null)
+            {
+                var suitKey = fieldInfo.suit_key;
+                Console.WriteLine($"Converting property '{fieldName}' to CBOR.");
+
+                // Check if fieldValue is a SUITBWrapField<T>
+                if (fieldValue.GetType().IsGenericType && fieldValue.GetType().GetGenericTypeDefinition() == typeof(SUITBWrapField<>))
+                {
+                    var wrappedField = fieldValue as dynamic;
+                    if (wrappedField.v != null)
+                    {
+                        var suitValue = wrappedField.v.ToSUIT();
+                        cborMap[suitKey] = suitValue;
+                    }
+                }
+                else
+                {
+                    // Execute ToSUIT directly if not wrapped
+                    var suitValue = (fieldValue as dynamic).ToSUIT();
+                    cborMap[suitKey] = suitValue;
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Field '{fieldName}' is null.");
+            }
+        }
+        return cborMap;
+    }
+
+
+
+ 
+
+    public void FromSUIT(Dictionary<string, object> suitDict)
+    {
+        foreach (var fieldInfo in fields.Values)
+        {
+            var fieldName = fieldInfo.json_key;
+            var suitKey = fieldInfo.suit_key;
+
+            if (suitDict.ContainsKey(suitKey))
+            {
+                var suitValue = suitDict[suitKey];
+                if (suitValue != null)
+                {
+                    GetType().GetProperty(fieldName)?.SetValue(this, suitValue);
+                }
+            }
         }
     }
 
-    public List<object> ToSUIT()
+    public string ToDebug(string indent)
     {
-        List<object> suitList = new List<object>
-        {
-            Version,
-            Sequence,
-            Dependencies,
-            DependenciesWrap.Select(dep => dep.EncodeToBytes()).ToList(),
-            ComponentsWrap.Select(comp => comp.EncodeToBytes()).ToList(),
-            ManifestsWrap.Select(manifest => manifest.EncodeToBytes()).ToList()
-        };
+        var debugText = "{";
+        var newIndent = indent + one_indent;
 
-        return suitList;
-    }
-
-    public void FromSUIT(List<object> suitList)
-    {
-        if (suitList == null || suitList.Count < 6)
+        foreach (var fieldInfo in fields.Values)
         {
-            throw new ArgumentException("Invalid SUIT List");
+            var fieldName = fieldInfo.json_key;
+            var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
+
+            if (fieldValue != null)
+            {
+                debugText += $"\n{newIndent}/{fieldInfo.json_key} / {fieldInfo.suit_key}:";
+                debugText += (fieldValue as dynamic).ToDebug(newIndent) + ",";
+            }
         }
 
-        Version = Convert.ToInt32(suitList[0]);
-        Sequence = Convert.ToInt32(suitList[1]);
-        Dependencies = (List<SUITDependency>)suitList[2];
-        
-        DependenciesWrap = ((List<byte[]>)suitList[3])
-            .Select(bytes =>
-            {
-                var depWrap = new SUITBWrapField<COSEList>();
-                depWrap.DecodeFromBytes(bytes);
-                return depWrap;
-            }).ToList();
+        debugText += $"\n{indent}";
+        return debugText;
+    }
+    public Dictionary<string, object> ToJson()
+    {
+        var jsonData = new Dictionary<string, object>();
 
-        ComponentsWrap = ((List<byte[]>)suitList[4])
-            .Select(bytes =>
-            {
-                var compWrap = new SUITBWrapField<COSEList>();
-                compWrap.DecodeFromBytes(bytes);
-                return compWrap;
-            }).ToList();
+        foreach (var fieldInfo in fields.Values)
+        {
+            var fieldName = fieldInfo.json_key;
+            var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
 
-        ManifestsWrap = ((List<byte[]>)suitList[5])
-            .Select(bytes =>
+            if (fieldValue != null)
             {
-                var manifestWrap = new SUITBWrapField<SUITBWrapField<CoseTaggedAuth>>();
-                manifestWrap.DecodeFromBytes(bytes);
-                return manifestWrap;
-            }).ToList();
+                jsonData[fieldName] = fieldValue;
+            }
+        }
+
+        return jsonData;
+    }
+
+    public void FromJson(Dictionary<string, object> jsonData)
+    {
+        foreach (var fieldInfo in fields.Values)
+        {
+            var fieldName = fieldInfo.json_key;
+            if (jsonData.TryGetValue(fieldName, out var fieldValue))
+            {
+                GetType().GetProperty(fieldName)?.SetValue(this, fieldValue);
+            }
+        }
     }
 }

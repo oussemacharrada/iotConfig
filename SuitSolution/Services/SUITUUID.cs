@@ -28,6 +28,11 @@ public class SUITUUID : ISUITUUID
         return _uuid.ToByteArray();
     }
 
+    public void FromSUIT(Dictionary<string, object> data)
+    {
+        throw new NotImplementedException();
+    }
+
     public void FromSUIT(byte[] data)
     {
         _uuid = new Guid(data);

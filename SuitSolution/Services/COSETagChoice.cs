@@ -1,60 +1,24 @@
 using System;
-using System.Text.Json;
-using PeterO.Cbor;
-using JsonSerializer = Newtonsoft.Json.JsonSerializer;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
-public class COSETagChoice
+public class COSETagChoice : SUITManifestDict
 {
-    public int Tag { get; set; }
-    public CBORObject Value { get; set; }
-
     public COSETagChoice()
     {
-        Tag = 0;
-        Value = CBORObject.Null;
+        fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields(
+            ("field1", "1", () => new COSETagChoiceField1()),
+            ("field2", "2", () => new COSETagChoiceField2())
+        ));
     }
 
-    /*public string ToJson()
-    {
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true
-        };
-        return JsonSerializer.Serialize(this, options);
-    }
+  
+}
 
-    public static COSETagChoice? FromJson(string json)
-    {
-        return JsonSerializer.Deserialize<COSETagChoice>(json);
-    }
-*/
-    public CBORObject ToSUIT()
-    {
-        CBORObject cborMap = CBORObject.NewMap();
-        cborMap.Add(Tag, Value);
-        return cborMap;
-    }
+public class COSETagChoiceField1
+{
+}
 
-    public static COSETagChoice FromSUIT(byte[] suitBytes)
-    {
-        CBORObject cborMap = CBORObject.DecodeFromBytes(suitBytes);
-        if (cborMap.Type == CBORType.Map && cborMap.Count > 0)
-        {
-            CBORObject tag = cborMap.Keys.FirstOrDefault();
-            CBORObject value = cborMap[tag];
-
-            var coseTagChoice = new COSETagChoice
-            {
-                Tag = tag.AsInt32(),
-                Value = value
-            };
-
-            return coseTagChoice;
-        }
-        else
-        {
-            throw new ArgumentException("Invalid SUIT CBOR map for COSETagChoice");
-        }
-    }
-
+public class COSETagChoiceField2
+{
 }

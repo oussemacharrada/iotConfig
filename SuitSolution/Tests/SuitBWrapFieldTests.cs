@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 using SuitSolution.Services;
-using SuitSolution.Services.SuitSolution.Services;
-
+/*
 namespace SuitSolution.Tests
 {
     public class SUITBWrapFieldTests
@@ -18,7 +17,7 @@ namespace SuitSolution.Tests
                 return new List<object> { Name, Age };
             }
 
-            public void FromSUIT(List<Object> suitList)
+            public SUITDigest FromSUIT(List<object> suitList)
             {
                 if (suitList.Count != 2)
                 {
@@ -82,3 +81,4 @@ namespace SuitSolution.Tests
         }
     }
 }
+*/

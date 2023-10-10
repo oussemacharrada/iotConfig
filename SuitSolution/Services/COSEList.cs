@@ -1,112 +1,89 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using PeterO.Cbor;
-using SuitSolution.Services.SuitSolution.Services;
+using System.Collections.ObjectModel;
+using SuitSolution.Interfaces;
+using SuitSolution.Services;
 
-namespace SuitSolution.Services
+public class COSEList : SUITManifestArray<COSETaggedAuth>, ISUITConvertible<COSEList>
 {
-    public class COSEList : ISUITConvertible
+    public SUITBWrapField<COSETaggedAuth> field { get; set; }
+
+    public COSEList()
     {
-        [JsonIgnore]
-        public CBORObject[] ListData { get; set; }
-
-        public COSEList()
-        { 
-            ListData = Array.Empty<CBORObject>();
-        }
-
-      
-        public void InitializeRandomData()
+        field = new SUITBWrapField<COSETaggedAuth>
         {
-            var random = new Random();
+            v = new COSETaggedAuth()
+        };
+    }
 
-            ListData = new CBORObject[]
-            {
-                CBORObject.FromObject("string1")};
-            Console.WriteLine(ListData);
-        }
-
-        public string ToJson()
+    public Dictionary<string, object> ToSUIT()
+    {
+        var suitList = new List<object>();
+        foreach (var item in items)
         {
-            var jsonList = new List<string>();
-
-            foreach (var cborObject in ListData)
-            {
-                jsonList.Add(cborObject.ToJSONString());
-            }
-
-            return JsonSerializer.Serialize(jsonList);
+            suitList.Add(item.ToSUIT());
         }
-
-
-        public COSEList FromJson(string json)
+        return new Dictionary<string, object>
         {
-            List<CBORObject> listData = CBORObject.FromJSONString(json).Values.ToList();
-            ListData = listData.ToArray();
-            return this;
-        }
+            { "items", suitList }
+        };
+    }
 
-
-
-
-
-
-
-        public List<object> ToSUIT()
+    public Dictionary<string, object> ToJson()
+    {
+        var jsonList = new List<object>();
+        foreach (var item in items)
         {
-            var suitList = new List<object>();
-            foreach (var data in ListData)
-            {
-                if (data.Type == CBORType.TextString)
-                {
-                    suitList.Add(data.AsString());
-                }
-                else if (data.Type == CBORType.Integer) 
-                {
-                    suitList.Add((int)data.AsInt64()); 
-                }
-                else if (data.Type == CBORType.Boolean)
-                {
-                    suitList.Add(data.AsBoolean());
-                }
-                else if (data.IsNull)
-                {
-                    suitList.Add(null);
-                }
-            }
-            return suitList;
+            jsonList.Add(item.ToJson());
+        }
+        return new Dictionary<string, object>
+        {
+            { "items", jsonList }
+        };
+    }
+
+    public string ToDebug(string indent)
+    {
+        throw new NotImplementedException();
+    }
+
+    public COSEList FromSUIT(Dictionary<string, object> suitDict)
+    {
+        if (suitDict == null || !suitDict.ContainsKey("items"))
+        {
+            throw new ArgumentException("Invalid SUIT data.");
         }
 
-      
-        public void FromSUIT(List<object> suitList)
+        var itemsList = (List<object>)suitDict["items"];
+        items = new List<COSETaggedAuth>();
+
+        foreach (var item in itemsList)
         {
-            var cborList = new List<CBORObject>();
-            foreach (var item in suitList)
-            {
-                if (item is string str)
-                {
-                    cborList.Add(CBORObject.FromObject(str));
-                }
-                else if (item is int intValue)
-                {
-                    cborList.Add(CBORObject.FromObject(intValue));
-                }
-                else if (item is double doubleValue)
-                {
-                    cborList.Add(CBORObject.FromObject(doubleValue));
-                }
-                else if (item is bool boolValue)
-                {
-                    cborList.Add(CBORObject.FromObject(boolValue));
-                }
-                else if (item == null)
-                {
-                    cborList.Add(CBORObject.Null);
-                }
-            }
-            ListData = cborList.ToArray();
+            var coseTaggedAuth = new COSETaggedAuth();
+            coseTaggedAuth.FromSUIT((Dictionary<string, object>)item);
+            items.Add(coseTaggedAuth);
         }
+
+        return this;
+    }
+
+    public COSEList FromJson(Dictionary<string, object> jsonData)
+    {
+        if (jsonData == null || !jsonData.ContainsKey("items"))
+        {
+            throw new ArgumentException("Invalid JSON data.");
+        }
+
+        var itemsList = (List<object>)jsonData["items"];
+        items = new List<COSETaggedAuth>();
+
+        foreach (var item in itemsList)
+        {
+            var coseTaggedAuth = new COSETaggedAuth();
+            coseTaggedAuth.FromJson((Dictionary<string, object>)item);
+            items.Add(coseTaggedAuth);
+        }
+
+        return this;
     }
 }

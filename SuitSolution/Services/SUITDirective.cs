@@ -17,28 +17,5 @@ public class SUITDirective
         Common = new SUITCommonInfo();
     }
 
-    public CBORObject ToCBORObject()
-    {
-        var cbor = CBORObject.NewMap();
-
-        cbor.Add("directive-id", DirectiveId);
-        cbor.Add("parameters", Parameters.ToCBORObject());
-        cbor.Add("try-each", TryEach.ToCBORObject());
-        cbor.Add("common", Common.ToCBORObject());
-
-        return cbor;
-    }
-
-    public void FromCBORObject(CBORObject cbor)
-    {
-        if (cbor.Type != CBORType.Map)
-        {
-            throw new FormatException("Invalid CBOR data for SUITDirective");
-        }
-
-        DirectiveId = cbor["directive-id"].AsInt32();
-        Parameters.FromCBORObject(cbor["parameters"]);
-        TryEach.FromCBORObject(cbor["try-each"]);
-        Common.FromCBORObject(cbor["common"]);
-    }
+ 
 }

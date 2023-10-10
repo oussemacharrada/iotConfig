@@ -1,182 +1,88 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using PeterO.Cbor;
-using SuitSolution.Services.SuitSolution.Services;
+using SuitSolution.Interfaces;
 
 namespace SuitSolution.Services
 {
-    public class SUITSequence : ISUITConvertible
+    public class SUITSequence : ISUITConvertible<SUITSequence>
     {
-        [JsonPropertyName("seq")]
-        public List<SUITComponentId> Sequence { get; set; }
+        public List<SUITCommand> Items { get; set; }
 
         public SUITSequence()
         {
-            Sequence = new List<SUITComponentId>();
-        }
-        public void InitializeRandomData()
-        {
-            Random random = new Random();
-
-            int itemCount = random.Next(1, 10);
-
-            Sequence.Clear(); 
-
-            for (int i = 0; i < itemCount; i++)
-            {
-                SUITComponentId componentId = new SUITComponentId();
-                componentId.InitializeRandomData();
-                
-             
-                Sequence.Add(componentId);
-            }
+            Items = new List<SUITCommand>();
         }
 
-        private string GenerateRandomString(int length)
+        public void FromSUIT(List<object> suitList)
         {
-            Random random = new Random();
-
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
-
-
-        public string ToJson()
-        {
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true
-            };
-            return JsonSerializer.Serialize(this, options);
-        }
-
-        public static SUITSequence FromJson(string json)
-        {
-            return JsonSerializer.Deserialize<SUITSequence>(json);
-        }
-        public List<object> ToSUIT()
-        {
-            var suitList = new List<object>();
-            foreach (var componentId in Sequence)
-            {
-                suitList.Add(componentId.ToSUIT());
-            }
-
-            return suitList;
-        }
-
-        public CBORObject ToCBOR()
-        {
-            var cborArray = CBORObject.NewArray();
-            foreach (var componentId in Sequence)
-            {
-                cborArray.Add(componentId.ToSUIT()); 
-            }
-
-            return cborArray;
-        }
-
-        public void FromSUIT(List<Object> suitList)
-        {
-            Sequence.Clear();
-
             if (suitList == null)
             {
                 throw new ArgumentNullException(nameof(suitList));
             }
 
-            foreach (var suitObject in suitList)
+            Items = new List<SUITCommand>();
+            foreach (var item in suitList)
             {
-                if (suitObject is CBORObject cborObject && cborObject.Type == CBORType.Map)
+                if (item is Dictionary<string, object> commandData)
                 {
-                    var id = cborObject["Id"].AsString();
-                    var classId = cborObject["class-id"].AsString();
-                    var vendorId = cborObject["vendor-id"].AsString();
-                    var imageDigest = cborObject["image-digest"].AsString();
-
-                    var componentId = new SUITComponentId
-                    {
-                        Id = id,
-                        ClassId = classId,
-                        VendorId = vendorId,
-                        ImageDigest = imageDigest
-                    };
-
-                    Sequence.Add(componentId);
+                    var cmd = new SUITCommand();
+                    cmd.FromSUIT(commandData);
+                    Items.Add(cmd);
                 }
                 else
                 {
-                    throw new ArgumentException("Invalid object type in the list.");
+                    throw new ArgumentException("Invalid object type within the list.");
                 }
             }
         }
 
-
-        public void FromCBOR(CBORObject cborArray)
+        public SUITSequence FromSUIT(Dictionary<string, object> suitDict)
         {
-            Sequence.Clear();
-            foreach (var item in cborArray.Values)
+            throw new NotImplementedException();
+        }
+
+        public SUITSequence FromJson(Dictionary<string, object> jsonData)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Dictionary<string, object> ToSUIT()
+        {
+            var suitList = new List<object>();
+            foreach (var item in Items)
             {
-                if (item.Type == CBORType.Array)
-                {
-                    var componentId = SUITComponentId.FromSUIT(item);
-                    Sequence.Add(componentId);
-                }
-                else
-                {
-                    throw new ArgumentException("Invalid CBOR type in the array.");
-                }
+                suitList.Add(item.ToSUIT());
             }
-        }
-        
 
-    }
-    
-    
-    
-    public class SUITSequenceBuilder
-    {
-        private SUITSequence sequence;
+            // Create a dictionary to represent the SUITSequence
+            var suitDict = new Dictionary<string, object>
+            {
+                { "items", suitList }
+            };
 
-        public SUITSequenceBuilder()
-        {
-            sequence = new SUITSequence();
+            return suitDict;
         }
 
-        public SUITSequenceBuilder AddComponentId(SUITComponentId componentId)
+        public Dictionary<string, object> ToJson()
         {
-            sequence.Sequence.Add(componentId);
-            return this;
+            var jsonList = new List<object>();
+            foreach (var item in Items)
+            {
+                jsonList.Add(item.ToJson());
+            }
+
+            // Create a dictionary to represent the JSON output
+            var jsonDict = new Dictionary<string, object>
+            {
+                { "items", jsonList }
+            };
+
+            return jsonDict;
         }
 
-        public SUITSequenceBuilder InitializeRandomData()
+        public string ToDebug(string indent)
         {
-            sequence.InitializeRandomData();
-            return this;
-        }
-
-        public SUITSequence Build()
-        {
-            return sequence;
-        }
-
-        public string ToJson()
-        {
-            return sequence.ToJson();
-        }
-
-        public static SUITSequenceBuilder FromJson(string json)
-        {
-            return new SUITSequenceBuilder().SetSequence(SUITSequence.FromJson(json));
-        }
-
-        public SUITSequenceBuilder SetSequence(SUITSequence existingSequence)
-        {
-            sequence = existingSequence;
-            return this;
+            throw new NotImplementedException();
         }
     }
 }
