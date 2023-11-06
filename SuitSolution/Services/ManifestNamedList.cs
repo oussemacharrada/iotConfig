@@ -1,74 +1,71 @@
-public class SUITManifestNamedList : SUITManifestDict
-{
-    public SUITManifestNamedList() : base()
-    {
-    }
+namespace SuitSolution.Services;
 
-    public new SUITManifestNamedList FromSUIT(Dictionary<string, object> data)
+public class SuitManifestNamedList : SUITManifestDict
+{public new dynamic ToSUIT()
     {
-        foreach (var kvp in fields)
-        {
-            var fieldName = kvp.Key;
-            var fieldInfo = kvp.Value;
-
-            if (data.ContainsKey(fieldInfo.suit_key))
+        var maxIndex = fields.Values
+            .Select(f =>
             {
-                var fieldValue = data[fieldInfo.suit_key];
-                if (fieldValue != null)
-                {
-                    var fieldValueObject = (fieldInfo.ObjectFactory as dynamic).FromSUIT(fieldValue);
-                    GetType().GetProperty(fieldName)?.SetValue(this, fieldValueObject);
-                }
-            }
-        }
+                var result = f.SuitKey;
+                return result;
+            })
+            .Max();
+        var cborList = new List<object>(new object[maxIndex + 1]);
 
-        return this;
-    }
-
-    public new List<object> ToSUIT()
-    {
-        int maxSuitKey = fields.Values.Max(fieldInfo => int.Parse(fieldInfo.suit_key));
-
-        var suitList = new List<object>(maxSuitKey + 1);
-
-        foreach (var kvp in fields)
+        foreach (var fieldInfo in fields.Values)
         {
-            var fieldInfo = kvp.Value;
-            var fieldName = kvp.Key;
+            var fieldName = fieldInfo.JsonKey;
             var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
-
             if (fieldValue != null)
             {
-                while (suitList.Count <= int.Parse(fieldInfo.suit_key)) 
-                {
-                    suitList.Add(null);
-                }
+                Console.WriteLine($"Converting property '{fieldName}' to CBOR.");
+                var suitValue = (fieldValue as dynamic).ToSUIT();
 
-                suitList[int.Parse(fieldInfo.suit_key)] = (fieldValue as dynamic).ToSUIT();
+                int suitKeyIndex = fieldInfo.SuitKey;
+                cborList[suitKeyIndex] = suitValue;
+            }
+            else
+            {
+                Console.WriteLine($"Field '{fieldName}' is null.");
             }
         }
-
-        return suitList;
+        return cborList;
     }
 
 
-    public new string ToDebug(string indent)
+    public new void FromSUIT(List<object> suitList)
+    {
+        foreach (var fieldInfo in fields.Values)
+        {
+            var fieldName = fieldInfo.JsonKey;
+            var suitKeyIndex = fieldInfo.SuitKey;
+
+            if (suitKeyIndex < suitList.Count)
+            {
+                var suitValue = suitList[suitKeyIndex];
+                if (suitValue != null)
+                {
+                    GetType().GetProperty(fieldName)?.SetValue(this, suitValue);
+                }
+            }
+        }
+    }
+
+    public string ToDebug(string indent)
     {
         var newIndent = indent + one_indent;
         var items = new List<string>();
 
-        foreach (var kvp in fields)
+        foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = kvp.Key;
-            var fieldInfo = kvp.Value;
+            var fieldName = fieldInfo.JsonKey;
             var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
-
             if (fieldValue != null)
             {
-                items.Add($"/ {fieldInfo.json_key} / {(fieldValue as dynamic).ToDebug(newIndent)}");
+                items.Add($"/ {fieldInfo.JsonKey} / {(fieldValue as dynamic).ToDebug(newIndent)}");
             }
         }
 
-        return $"[\n{newIndent}{string.Join(",\n" + newIndent, items)}\n{indent}]";
+        return $"[\n{newIndent}{string.Join($",\n{newIndent}", items)}\n{indent}]";
     }
 }

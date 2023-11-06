@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using PeterO.Cbor;
+
+namespace SuitSolution.Services;
 
 public class SuitManifestParser
 {
@@ -28,7 +27,7 @@ public class SuitManifestParser
             var cbor = CBORObject.DecodeFromBytes(inputBytes, CBOREncodeOptions.Default);
 
             ParseCborRecursive(cbor, manifest);
-        }
+        }   
         catch (Exception ex)
         {
             Console.WriteLine($"Error reading CBOR data: {ex.Message}");
@@ -39,78 +38,78 @@ public class SuitManifestParser
 
  
 
-   private static void ParseCborRecursive(CBORObject cborObject, Dictionary<string, object> manifest, string indent = "")
-{
-    if (cborObject == null)
+    private static void ParseCborRecursive(CBORObject cborObject, Dictionary<string, object> manifest, string indent = "")
     {
-        return;
-    }
-
-    if (cborObject.Type == CBORType.Map)
-    {
-        foreach (CBORObject key in cborObject.Keys)
+        if (cborObject == null)
         {
-            object keyValue = null;
+            return;
+        }
 
-            if (key.Type == CBORType.TextString)
+        if (cborObject.Type == CBORType.Map)
+        {
+            foreach (CBORObject key in cborObject.Keys)
             {
-                keyValue = key.AsString();
-            }
-            else if (key.Type == CBORType.ByteString)
-            {
-                keyValue = key.ToJSONString();
-            }
+                object keyValue = null;
 
-            CBORObject value = cborObject[key];
-
-            if (value != null)
-            {
-                object parsedValue = null;
-
-                if (value.Type == CBORType.Array || value.Type == CBORType.Map)
+                if (key.Type == CBORType.TextString)
                 {
-                    Dictionary<string, object> nestedManifest = new Dictionary<string, object>();
-                    ParseCborRecursive(value, nestedManifest, indent + "  "); // Increase the indent for nested levels
-                    parsedValue = nestedManifest;
+                    keyValue = key.AsString();
                 }
-                else if (value.Type == CBORType.TextString)
+                else if (key.Type == CBORType.ByteString)
                 {
-                    parsedValue = value.AsString();
-                }
-                else if (value.Type == CBORType.ByteString)
-                {
-                    parsedValue = value.ToJSONString();
-
-                }
-                else if (value.Type == CBORType.Integer)
-                {
-                    parsedValue = value.AsInt64();
+                    keyValue = key.ToJSONString();
                 }
 
-                manifest[keyValue?.ToString()] = parsedValue;
+                CBORObject value = cborObject[key];
 
-                // Log the key-value pair
+                if (value != null)
+                {
+                    object parsedValue = null;
+
+                    if (value.Type == CBORType.Array || value.Type == CBORType.Map)
+                    {
+                        Dictionary<string, object> nestedManifest = new Dictionary<string, object>();
+                        ParseCborRecursive(value, nestedManifest, indent + "  "); // Increase the indent for nested levels
+                        parsedValue = nestedManifest;
+                    }
+                    else if (value.Type == CBORType.TextString)
+                    {
+                        parsedValue = value.AsString();
+                    }
+                    else if (value.Type == CBORType.ByteString)
+                    {
+                        parsedValue = value.ToJSONString();
+
+                    }
+                    else if (value.Type == CBORType.Integer)
+                    {
+                        parsedValue = value.AsInt64();
+                    }
+
+                    manifest[keyValue?.ToString()] = parsedValue;
+
+                    // Log the key-value pair
+                }
             }
         }
     }
-}
 
-private static bool IsHexString(string hexString)
-{
-    return hexString.Length % 2 == 0 && System.Text.RegularExpressions.Regex.IsMatch(hexString, @"\A\b[0-9a-fA-F]+\b\Z");
-}
+    private static bool IsHexString(string hexString)
+    {
+        return hexString.Length % 2 == 0 && System.Text.RegularExpressions.Regex.IsMatch(hexString, @"\A\b[0-9a-fA-F]+\b\Z");
+    }
 
 // Helper function to convert a hex string to bytes
-private static byte[] HexStringToBytes(string hexString)
-{
-    int length = hexString.Length;
-    byte[] bytes = new byte[length / 2];
-    for (int i = 0; i < length; i += 2)
+    private static byte[] HexStringToBytes(string hexString)
     {
-        bytes[i / 2] = Convert.ToByte(hexString.Substring(i, 2), 16);
+        int length = hexString.Length;
+        byte[] bytes = new byte[length / 2];
+        for (int i = 0; i < length; i += 2)
+        {
+            bytes[i / 2] = Convert.ToByte(hexString.Substring(i, 2), 16);
+        }
+        return bytes;
     }
-    return bytes;
-}
 
 
 

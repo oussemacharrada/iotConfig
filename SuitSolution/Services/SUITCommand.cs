@@ -5,55 +5,46 @@ using SuitSolution.Interfaces;
 
 namespace SuitSolution.Services
 {
-    public class SUITCommand : ISUITConvertible<SUITCommand>
+    public class SUITCommand : IJsonSerializable
     {
-        private static readonly Dictionary<string, SUITCommandContainer> jcommands =
-            new Dictionary<string, SUITCommandContainer>();
+        private static readonly Dictionary<string, SUITCommandContainer> jcommands = new Dictionary<string, SUITCommandContainer>();
+        private static readonly Dictionary<string, SUITCommandContainer> scommands = new Dictionary<string, SUITCommandContainer>();
 
-        private static readonly Dictionary<string, SUITCommandContainer> scommands =
-            new Dictionary<string, SUITCommandContainer>();
-
-        public SUITCommand()
+       public static List<SUITCommandContainer> commands = new List<SUITCommandContainer>
+{
+    new SUITCommandContainer("condition-vendor-identifier", "1", typeof(SUITReportingPolicy), new List<string> { "vendor-id" }),
+    new SUITCommandContainer("condition-class-identifier", "2", typeof(SUITReportingPolicy), new List<string> { "class-id" }),
+    new SUITCommandContainer("condition-image-match", "3", typeof(SUITReportingPolicy), new List<string> { "digest" }),
+    new SUITCommandContainer("condition-use-before", "4", typeof(SUITReportingPolicy)),
+    new SUITCommandContainer("condition-component-offset", "5", typeof(SUITReportingPolicy), new List<string> { "offset" }),
+    new SUITCommandContainer("condition-device-identifier", "24", typeof(SUITReportingPolicy)),
+    new SUITCommandContainer("condition-image-not-match", "25", typeof(SUITReportingPolicy)),
+    new SUITCommandContainer("condition-minimum-battery", "26", typeof(SUITReportingPolicy)),
+    new SUITCommandContainer("condition-update-authorised", "27", typeof(SUITReportingPolicy)),
+    new SUITCommandContainer("condition-version", "28", typeof(SUITReportingPolicy)),
+    new SUITCommandContainer("directive-set-component-index", "12", typeof(SUITPosInt)),
+    new SUITCommandContainer("directive-set-dependency-index", "13", typeof(SUITPosInt)),
+    new SUITCommandContainer("directive-abort", "14", typeof(SUITReportingPolicy)),
+    new SUITCommandContainer("directive-try-each", "15", typeof(SUITTryEach)),
+    new SUITCommandContainer("directive-process-dependency", "18", typeof(SUITReportingPolicy)),
+    new SUITCommandContainer("directive-set-parameters", "19", typeof(SUITParameters)),
+    new SUITCommandContainer("directive-override-parameters", "20", typeof(SUITParameters)),
+    new SUITCommandContainer("directive-fetch", "21", typeof(SUITReportingPolicy)),
+    new SUITCommandContainer("directive-copy", "22", typeof(SUITReportingPolicy)),
+    new SUITCommandContainer("directive-run", "23", typeof(SUITReportingPolicy)),
+    new SUITCommandContainer("directive-wait", "29", typeof(SUITReportingPolicy)),
+    new SUITCommandContainer("directive-run-sequence", "30", typeof(SUITRaw)),
+    new SUITCommandContainer("directive-run-with-arguments", "31", typeof(SUITRaw)),
+    new SUITCommandContainer("directive-swap", "32", typeof(SUITReportingPolicy))
+};
+ static SUITCommand()
         {
             foreach (var c in commands)
             {
-                jcommands[c.json_key] = c;
-                scommands[c.suit_key] = c;
+                jcommands[c.JsonKey] = c;
+                scommands[c.SuitKey] = c;
             }
         }
-
-         public List<SUITCommandContainer> commands = new List<SUITCommandContainer>
-        {
-            SUITCommandContainer.Create("condition-vendor-identifier", "1", typeof(SUITReportingPolicy),
-                dp: new List<string> { "vendor-id" }),
-            SUITCommandContainer.Create("condition-class-identifier", "2", typeof(SUITReportingPolicy),
-                dp: new List<string> { "class-id" }),
-            SUITCommandContainer.Create("condition-image-match", "3", typeof(SUITReportingPolicy),
-                dp: new List<string> { "digest" }),
-            SUITCommandContainer.Create("condition-use-before", "4", typeof(SUITReportingPolicy),
-                dp: new List<string>()),
-            SUITCommandContainer.Create("condition-component-offset", "5", typeof(SUITReportingPolicy),
-                dp: new List<string> { "offset" }),
-            SUITCommandContainer.Create("condition-device-identifier", "24", typeof(SUITReportingPolicy)),
-            SUITCommandContainer.Create("condition-image-not-match", "25", typeof(SUITReportingPolicy)),
-            SUITCommandContainer.Create("condition-minimum-battery", "26", typeof(SUITReportingPolicy)),
-            SUITCommandContainer.Create("condition-update-authorised", "27", typeof(SUITReportingPolicy)),
-            SUITCommandContainer.Create("condition-version", "28", typeof(SUITReportingPolicy)),
-            SUITCommandContainer.Create("directive-set-component-index", "12", typeof(SUITPosInt)),
-            SUITCommandContainer.Create("directive-set-dependency-index", "13", typeof(SUITPosInt)),
-            SUITCommandContainer.Create("directive-abort", "14", typeof(SUITReportingPolicy)),
-            SUITCommandContainer.Create("directive-try-each", "15", typeof(SUITTryEach)),
-            SUITCommandContainer.Create("directive-process-dependency", "18", typeof(SUITReportingPolicy)),
-            SUITCommandContainer.Create("directive-set-parameters", "19", typeof(SUITParameters)),
-            SUITCommandContainer.Create("directive-override-parameters", "20", typeof(SUITParameters)),
-            SUITCommandContainer.Create("directive-fetch", "21", typeof(SUITReportingPolicy)),
-            SUITCommandContainer.Create("directive-copy", "22", typeof(SUITReportingPolicy)),
-            SUITCommandContainer.Create("directive-run", "23", typeof(SUITReportingPolicy)),
-            SUITCommandContainer.Create("directive-wait", "29", typeof(SUITReportingPolicy)),
-            SUITCommandContainer.Create("directive-run-sequence", "30", typeof(SUITRaw)),
-            SUITCommandContainer.Create("directive-run-with-arguments", "31", typeof(SUITRaw)),
-            SUITCommandContainer.Create("directive-swap", "32", typeof(SUITReportingPolicy)),
-        };
 
         public SUITCommand FromJson(Dictionary<string, object> j)
         {
@@ -64,81 +55,75 @@ namespace SuitSolution.Services
 
             if (!j.TryGetValue("command-id", out var commandIdValue) || !(commandIdValue is string commandId))
             {
-                throw new ArgumentException("Missing or invalid 'command-id' in the SUIT dictionary.");
+                throw new ArgumentException("Missing or invalid 'command-id' in the JSON dictionary.");
             }
 
-            if (!jcommands.ContainsKey(commandId))
+            if (!jcommands.TryGetValue(commandId, out var commandContainer))
             {
                 throw new Exception($"Unknown JSON Key: {commandId}");
             }
 
-            var commandContainer = jcommands[commandId];
-
-            if (!j.TryGetValue("command-arg", out var commandArgsValue) ||
-                !(commandArgsValue is string commandArgs))
-            {
-                throw new ArgumentException("Missing or invalid 'command-arg' in the SUIT dictionary.");
-            }
-
-            var commandInstance = commandContainer.CreateDic(j);
-
+            var commandInstance = commandContainer.CreateCommand().FromJson(j);
             return commandInstance;
         }
 
-        public Dictionary<string, object> ToSUIT()
+        public Dictionary<string, object> ToJson(string commandId)
         {
-            var suitDict = new Dictionary<string, object>
-            {
-                { "command-id", "some-command-id" },
-            };
-
-            return suitDict;
-        }
-
-        public Dictionary<string, object> ToJson()
-        {
-            var jsonDict = new Dictionary<string, object>
-            {
-                { "command-id", "some-command-id" },
-                { "command-arg", "some-command-arg" },
-            };
-
-            return jsonDict;
-        }
-
-        public string ToDebug(string indent)
-        {
-            return $"Debug info for SUITCommand with indent {indent}";
-        }
-
-        public SUITCommand FromSUIT(Dictionary<string, object> suitDict)
-        {
-            if (suitDict == null)
-            {
-                throw new ArgumentNullException(nameof(suitDict));
-            }
-
-            if (!suitDict.TryGetValue("command-id", out var commandIdValue) || !(commandIdValue is string commandId))
-            {
-                throw new ArgumentException("Missing or invalid 'command-id' in the SUIT dictionary.");
-            }
-
-            if (!jcommands.ContainsKey(commandId))
+            if (!jcommands.TryGetValue(commandId, out var commandContainer))
             {
                 throw new Exception($"Unknown JSON Key: {commandId}");
             }
 
-            var commandContainer = jcommands[commandId];
+            var commandInstance = commandContainer.CreateCommand();
+            return commandInstance.ToJson();
+        }
 
-            if (!suitDict.TryGetValue("command-arg", out var commandArgsValue) ||
-                !(commandArgsValue is Dictionary<string, object> commandArgs))
+        // ... [Rest of the SUITCommand class] ...
+
+        public List<object> ToSUIT(string suitKey)
+        {
+            if (!scommands.TryGetValue(suitKey, out var commandContainer))
             {
-                throw new ArgumentException("Missing or invalid 'command-arg' in the SUIT dictionary.");
+                throw new Exception($"Unknown SUIT Key: {suitKey}");
             }
 
-            var commandInstance = commandContainer.CreateDic(commandArgs);
+            var commandInstance = commandContainer.CreateCommand();
+            return commandInstance.ToSUIT();
+        }
 
+
+        public SUITCommand FromSUIT(List<object> s)
+        {
+            if (s == null || s.Count < 1)
+            {
+                throw new ArgumentException("Invalid SUIT data.");
+            }
+
+            if (!(s[0] is string suitKey))
+            {
+                throw new ArgumentException("Invalid 'suitKey' in the SUIT data.");
+            }
+
+            if (!scommands.TryGetValue(suitKey, out var commandContainer))
+            {
+                throw new Exception($"Unknown SUIT Key: {suitKey}");
+            }
+
+            var commandInstance = commandContainer.CreateCommand().FromSUIT(s);
             return commandInstance;
+        }
+
+        public dynamic ToJson()
+        {
+            var jsonRepresentation = new Dictionary<string, object>();
+
+            foreach (var command in commands)
+            {
+                var commandInstance = command.CreateCommand();
+                jsonRepresentation[command.JsonKey] = commandInstance.ToJson();
+            }
+
+            return jsonRepresentation;
         }
     }
 }

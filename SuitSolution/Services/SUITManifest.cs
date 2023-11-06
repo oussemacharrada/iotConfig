@@ -12,20 +12,19 @@ public class SUITManifest : SUITManifestDict, ISUITConvertible<SUITManifest>
 {
     public SUITManifest()
     {
-            fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields(
-                ("version", "1", () => version),
-                ("sequence", "2", () => sequence),
-                ("common", "3", () => common)
-               /* ("refuri", "4", () => refuri),
-                ("deres", "7", () => deres),
-                ("fetch", "8", () => fetch),
-                ("install", "9", () => install),
-                ("validate", "10    ", () => validate),
-                ("load", "11", () => load),
-                ("run", "12", () => run),
-                ("text", "13", () => text),
-                ("coswid", "14", () => coswid)
-            */));
+        fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields(
+            ("manifest-version", 1, () => version,"version"),
+            ("manifest-sequence-number", 2, () => sequence,"sequence"),
+            ("common", 3, () => common,"common"),
+                ("reference-uri", 4, () => refuri,"refuri"),
+                ("dependency-resolution", 7, () => deres,"deres"),
+                ("payload-fetch", 8, () => fetch,"fetch"),
+                ("install", 9, () => install,"install"),
+                ("validate", 10  , () => validate,"validate"),
+                ("load", 11, () => load,"load"),
+                ("run", 12, () => run,"run"),
+                ("text", 13, () => text,"text")
+            ));
 
    
     }
@@ -43,7 +42,7 @@ public class SUITManifest : SUITManifestDict, ISUITConvertible<SUITManifest>
     public SUITSeverableField<SUITText> text { get; set; }= new SUITSeverableField<SUITText>();
     public SUITBytes coswid { get; set; } = new SUITBytes();
 
-    public new SUITManifest FromSUIT(Dictionary<string, object> suitDict)
+    public new SUITManifest FromSUIT(Dictionary<object, object> suitDict)
     {
         if (suitDict == null)
         {
@@ -61,7 +60,7 @@ public class SUITManifest : SUITManifestDict, ISUITConvertible<SUITManifest>
         {
             sequence = new SUITPosInt { v = sequenceInt };
         }
-
+    
         if (suitDict.TryGetValue("common", out var commonValue) && commonValue is Dictionary<string, object> commonDict)
         {
             var commonValues = SerializationHelper.SerializeToBytes(commonDict); 
@@ -198,9 +197,14 @@ public class SUITManifest : SUITManifestDict, ISUITConvertible<SUITManifest>
 
         return this;
     }
-   
-   
-    public new Dictionary<string, object> ToJson()
+
+    public dynamic ToSuit()
+    {
+        var dic = base.ToSUIT();
+        dic.Add(3, common.ToSUIT());
+        return dic;
+    }
+    public new dynamic ToJson()
     {
         var jsonData = base.ToJson();
         

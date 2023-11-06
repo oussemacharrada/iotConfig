@@ -29,8 +29,8 @@ public class COSEHeaderMap : SUITManifestDict, ISUITConvertible<COSEHeaderMap>
     public COSEHeaderMap()
     {
         fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields(
-            ("alg", "alg", () => Alg),
-            ("kid", "kid", () => Kid)
+            ("alg", 1, () => Alg,"Alg"),
+            ("kid", 4, () => Kid,"Kid")
         ));
     }
 
@@ -46,7 +46,7 @@ public class COSEHeaderMap : SUITManifestDict, ISUITConvertible<COSEHeaderMap>
         return JsonConvert.DeserializeObject<T>(json);
     }
 
-    public COSEHeaderMap FromSUIT(Dictionary<string, object> suitDict)
+    public COSEHeaderMap FromSUIT(Dictionary<object, object> suitDict)
     {
         if (suitDict == null || suitDict.Count == 0)
         {
@@ -55,8 +55,8 @@ public class COSEHeaderMap : SUITManifestDict, ISUITConvertible<COSEHeaderMap>
 
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
-            var suitKey = fieldInfo.suit_key;
+            var fieldName = fieldInfo.JsonKey;
+            var suitKey = fieldInfo.SuitKey;
 
             if (suitDict.ContainsKey(suitKey))
             {
@@ -77,17 +77,17 @@ public class COSEHeaderMap : SUITManifestDict, ISUITConvertible<COSEHeaderMap>
         return this;
     }
 
-    public Dictionary<string, object> ToJson()
+    public dynamic ToJson()
     {
         var jsonDict = new Dictionary<string, object>();
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
+            var fieldName = fieldInfo.JsonKey;
             var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
 
             if (fieldValue != null)
             {
-                jsonDict.Add(fieldInfo.json_key, ((ISUITConvertible)fieldValue).ToJson());
+                jsonDict.Add(fieldInfo.JsonKey, ((ISUITConvertible)fieldValue).ToJson());
             }
         }
 
@@ -103,7 +103,7 @@ public class COSEHeaderMap : SUITManifestDict, ISUITConvertible<COSEHeaderMap>
 
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
+            var fieldName = fieldInfo.JsonKey;
 
             if (jsonData.ContainsKey(fieldName))
             {
@@ -124,17 +124,17 @@ public class COSEHeaderMap : SUITManifestDict, ISUITConvertible<COSEHeaderMap>
         return this;
     }
 
-    public List<object> ToSUIT()
+    public dynamic ToSUIT()
     {
         var cborMap = CBORObject.NewMap();
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
+            var fieldName = fieldInfo.JsonKey;
             var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
 
             if (fieldValue != null)
             {
-                var suitKey = fieldInfo.suit_key;
+                var suitKey = fieldInfo.SuitKey;
                 var suitValue = (fieldValue as ISUITConvertible<COSEHeaderMap>)?.ToSUIT();
 
                 if (suitValue != null)

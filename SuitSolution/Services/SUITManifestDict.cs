@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using SuitSolution.Interfaces;
+using SuitSolution.Services;
 
 public class SUITManifestDict
 {
@@ -9,21 +10,23 @@ public class SUITManifestDict
 
     public class ManifestKey
     {
-        public string json_key { get; private set; }
-        public string suit_key { get; private set; }
+        public string JsonKey { get; private set; }
+        public int SuitKey { get; private set; }
         public Func<object> ObjectFactory { get; private set; }
+        public string DescriptiveName { get; private set; }
 
-        public ManifestKey(string jsonKey, string suitKey, Func<object> objectFactory)
+        public ManifestKey(string jsonKey, int suitKey, Func<object> objectFactory, string descriptiveName)
         {
-            json_key = jsonKey;
-            suit_key = suitKey;
+            JsonKey = jsonKey;
+            SuitKey = suitKey;
             ObjectFactory = objectFactory;
+            DescriptiveName = descriptiveName;
         }
     }
 
-    public  ReadOnlyDictionary<string, ManifestKey> fields;
+    public static ReadOnlyDictionary<string, ManifestKey> fields;
 
-    public SUITManifestDict(params (string, string, Func<object>)[] fieldTuples)
+    public SUITManifestDict(params (string, int, Func<object>, string)[] fieldTuples)
     {
         fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields(fieldTuples));
     }
@@ -33,47 +36,37 @@ public class SUITManifestDict
         fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields());
     }
 
-    public static Dictionary<string, ManifestKey> MkFields(params (string, string, Func<object>)[] fieldTuples)
+    public static Dictionary<string, ManifestKey> MkFields(params (string, int, Func<object>, string)[] fieldTuples)
     {
         var fieldDict = new Dictionary<string, ManifestKey>();
 
         for (int i = 0; i < fieldTuples.Length; i++)
         {
-            var (fieldName, suitKey, objFunc) = fieldTuples[i];
-            fieldDict[fieldName] = new ManifestKey(fieldName, suitKey, objFunc);
+            var (fieldName, suitKey, objFunc, descriptiveName) = fieldTuples[i];
+            fieldDict[fieldName] = new ManifestKey(fieldName, suitKey, objFunc, descriptiveName);
         }
 
         return fieldDict;
     }
 
-    public Dictionary<string, object> ToSUIT()
+    public dynamic ToSUIT()
     {
-        var cborMap = new Dictionary<string, object>();
+        var cborMap = new Dictionary<int, object>();
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
+            var fieldName = fieldInfo.DescriptiveName;
             var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
+
             if (fieldValue != null)
             {
-                var suitKey = fieldInfo.suit_key;
-                Console.WriteLine($"Converting property '{fieldName}' to CBOR.");
+                var suitKey = fieldInfo.SuitKey;
+                Console.WriteLine($"Converting property '{fieldName}' to CBOR. '{fieldInfo.SuitKey}'");
 
-                // Check if fieldValue is a SUITBWrapField<T>
-                if (fieldValue.GetType().IsGenericType && fieldValue.GetType().GetGenericTypeDefinition() == typeof(SUITBWrapField<>))
-                {
-                    var wrappedField = fieldValue as dynamic;
-                    if (wrappedField.v != null)
-                    {
-                        var suitValue = wrappedField.v.ToSUIT();
-                        cborMap[suitKey] = suitValue;
-                    }
-                }
-                else
-                {
+                
                     // Execute ToSUIT directly if not wrapped
                     var suitValue = (fieldValue as dynamic).ToSUIT();
                     cborMap[suitKey] = suitValue;
-                }
+                
             }
             else
             {
@@ -87,23 +80,37 @@ public class SUITManifestDict
 
  
 
-    public void FromSUIT(Dictionary<string, object> suitDict)
+  
+    public void FromSUIT(Dictionary<object, object> suitDict)
     {
+        TreeBranch.Append("SUITManifestDict");  // Using string instead of typeof
+
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
-            var suitKey = fieldInfo.suit_key;
+            var fieldName = fieldInfo.JsonKey;
+            var suitKey = fieldInfo.SuitKey;
+
+            TreeBranch.Append(fieldName);  // This is now valid
 
             if (suitDict.ContainsKey(suitKey))
             {
                 var suitValue = suitDict[suitKey];
                 if (suitValue != null)
                 {
-                    GetType().GetProperty(fieldName)?.SetValue(this, suitValue);
+                    var property = GetType().GetProperty(fieldName);
+                    if (property != null)
+                    {
+                        property.SetValue(this, suitValue);
+                    }
                 }
             }
+
+            TreeBranch.Pop();
         }
+
+        TreeBranch.Pop();
     }
+
 
     public string ToDebug(string indent)
     {
@@ -112,12 +119,12 @@ public class SUITManifestDict
 
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
+            var fieldName = fieldInfo.JsonKey;
             var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
 
             if (fieldValue != null)
             {
-                debugText += $"\n{newIndent}/{fieldInfo.json_key} / {fieldInfo.suit_key}:";
+                debugText += $"\n{newIndent}/{fieldInfo.JsonKey} / {fieldInfo.SuitKey}:";
                 debugText += (fieldValue as dynamic).ToDebug(newIndent) + ",";
             }
         }
@@ -131,7 +138,7 @@ public class SUITManifestDict
 
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
+            var fieldName = fieldInfo.JsonKey;
             var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
 
             if (fieldValue != null)
@@ -147,7 +154,7 @@ public class SUITManifestDict
     {
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
+            var fieldName = fieldInfo.JsonKey;
             if (jsonData.TryGetValue(fieldName, out var fieldValue))
             {
                 GetType().GetProperty(fieldName)?.SetValue(this, fieldValue);

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 using PeterO.Cbor;
@@ -21,27 +22,22 @@ public class SUITBWrapField<T> where T : ISUITConvertible<T>, new()
 
     public byte[] ToSUIT()
     {
+        TreeBranch.Append(typeof(SUITBWrapField<T>).FullName);
         var cborObject = v.ToSUIT();
         var cbor = CBORObject.FromObject(cborObject);
         byte[] cborBytes = cbor.EncodeToBytes();
-        // Convert the bytes to a hexadecimal string
-        string hexString = BitConverter.ToString(cborBytes).Replace("-", "");
-
-        // Convert the hexadecimal string to bytes (UTF-8 encoded)
-        byte[] utf8Bytes = Encoding.UTF8.GetBytes(hexString);
-
-   
-        return utf8Bytes;
+        TreeBranch.Pop();
+        return cborBytes;
     }
 
     public string ToJson()
     {
-        var suitDict = v.ToSUIT();
-        return JsonConvert.SerializeObject(suitDict);
+        return JsonConvert.SerializeObject(v.ToSUIT());
     }
 
     public SUITBWrapField<T> FromSUIT(byte[] cborBytes)
     {
+        TreeBranch.Append(typeof(SUITBWrapField<T>).FullName);
         if (cborBytes == null)
         {
             throw new ArgumentNullException(nameof(cborBytes));
@@ -49,14 +45,17 @@ public class SUITBWrapField<T> where T : ISUITConvertible<T>, new()
 
         try
         {
-            var suitDict = CBORObject.DecodeFromBytes(cborBytes).ToObject<Dictionary<string, object>>();
+            var suitDict = CBORObject.DecodeFromBytes(cborBytes).ToObject<Dictionary<object, object>>();
             v = new T().FromSUIT(suitDict);
         }
         catch (Exception e)
         {
             Console.WriteLine($"Failed to load CBOR data: {BitConverter.ToString(cborBytes)}");
-            throw new SUITException(
-                message: $"Failed to load CBOR data: {BitConverter.ToString(cborBytes)}");
+            throw new SUITException($"Failed to load CBOR data: {BitConverter.ToString(cborBytes)}");
+        }
+        finally
+        {
+            TreeBranch.Pop();
         }
 
         return this;
@@ -64,16 +63,20 @@ public class SUITBWrapField<T> where T : ISUITConvertible<T>, new()
 
     public SUITBWrapField<T> FromJson(string data)
     {
+        TreeBranch.Append(typeof(SUITBWrapField<T>).FullName);
         try
         {
-            var suitDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(data);
+            var suitDict = JsonConvert.DeserializeObject<Dictionary<object, object>>(data);
             v = new T().FromSUIT(suitDict);
         }
         catch (Exception e)
         {
             Console.WriteLine($"Failed to parse JSON data: {data}");
-            throw new SUITException(
-                message: $"Failed to parse JSON data: {data}");
+            throw new SUITException($"Failed to parse JSON data: {data}");
+        }
+        finally
+        {
+            TreeBranch.Pop();
         }
         return this;
     }

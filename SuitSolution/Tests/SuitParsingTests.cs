@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using PeterO.Cbor;
+using SuitSolution.Services;
 using Xunit;
 
 public class SuitManifestParserTests

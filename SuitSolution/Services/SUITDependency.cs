@@ -10,6 +10,13 @@ namespace SuitSolution.Services
         public SUITDigest DependencyDigest { get; set; }
         public SUITComponentId DependencyPrefix { get; set; }
 
+        // Dictionary to define the mapping between property names and their SUIT and JSON keys
+        private static readonly Dictionary<string, (string suitKey, int jsonKey, Type type)> fields = new Dictionary<string, (string, int, Type)>
+        {
+            { nameof(DependencyDigest), ("dependency-digest", 0, typeof(SUITDigest)) },
+            { nameof(DependencyPrefix), ("dependency-prefix", 1, typeof(SUITComponentId)) }
+        };
+
         // Default constructor initializes properties
         public SUITDependency()
         {
@@ -23,9 +30,8 @@ namespace SuitSolution.Services
             DependencyDigest = digest;
             DependencyPrefix = prefix;
         }
-
         // Convert from SUIT format to object
-        public SUITDependency FromSUIT(Dictionary<string, object> suitDict)
+        public SUITDependency FromSUIT(Dictionary<object, object> suitDict)
         {
             if (suitDict == null)
             {
@@ -35,12 +41,12 @@ namespace SuitSolution.Services
             // Check and initialize properties based on SUIT dictionary keys
             if (suitDict.ContainsKey("dependency-digest"))
             {
-                DependencyDigest = new SUITDigest().FromSUIT(suitDict["dependency-digest"] as Dictionary<string, object>);
+                DependencyDigest = new SUITDigest().FromSUIT(suitDict["dependency-digest"] as Dictionary<object, object>);
             }
 
             if (suitDict.ContainsKey("dependency-prefix"))
             {
-                DependencyPrefix = new SUITComponentId().FromSUIT(suitDict["dependency-prefix"] as Dictionary<string, object>);
+                DependencyPrefix = new SUITComponentId().FromSUIT(suitDict["dependency-prefix"] as Dictionary<object, object>);
             }
 
             return this;
@@ -55,18 +61,19 @@ namespace SuitSolution.Services
             }
 
             // Check and initialize properties based on JSON keys
-            if (jsonData.ContainsKey("0"))
-            {
-                DependencyDigest = new SUITDigest().FromJson(jsonData["0"] as Dictionary<string, object>);
-            }
-
             if (jsonData.ContainsKey("1"))
             {
-                DependencyPrefix = new SUITComponentId().FromJson(jsonData["1"] as Dictionary<string, object>);
+                DependencyDigest = new SUITDigest().FromJson(jsonData["1"] as Dictionary<string, object>);
+            }
+
+            if (jsonData.ContainsKey("2"))
+            {
+                DependencyPrefix = new SUITComponentId().FromJson(jsonData["2"] as Dictionary<string, object>);
             }
 
             return this;
         }
+
 
         // Convert to SUIT format (list of objects)
         public new List<object> ToSUIT()
@@ -96,7 +103,7 @@ namespace SuitSolution.Services
         }
 
         // Convert to JSON format (dictionary)
-        public Dictionary<string, object> ToJson()
+        public dynamic ToJson()
         {
             var jsonDict = new Dictionary<string, object>();
 

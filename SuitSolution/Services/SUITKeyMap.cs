@@ -7,17 +7,17 @@ namespace SuitSolution.Services
 {
     public class SUITKeyMap<T>
     {
-        public readonly Dictionary<string, T> keymap;
-        private readonly Dictionary<T, string> rkeymap;
+        public readonly Dictionary<object, T> KeyMap;
+        private readonly Dictionary<T, object> RKeyMap;
         private T v;
 
-        public SUITKeyMap(Dictionary<string, T> keymap)
+        public SUITKeyMap(Dictionary<object, T> keyMap)
         {
-            this.keymap = keymap;
-            rkeymap = new Dictionary<T, string>();
-            foreach (var entry in keymap)
+            KeyMap = keyMap;
+            RKeyMap = new Dictionary<T, object>();
+            foreach (var entry in KeyMap)
             {
-                rkeymap[entry.Value] = entry.Key;
+                RKeyMap[entry.Value] = entry.Key;
             }
         }
 
@@ -27,7 +27,7 @@ namespace SuitSolution.Services
 
         public string ToJson()
         {
-            if (rkeymap.TryGetValue(v, out string key))
+            if (RKeyMap.TryGetValue(v, out object key))
             {
                 return JsonSerializer.Serialize(key, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
             }
@@ -37,18 +37,18 @@ namespace SuitSolution.Services
             }
         }
 
-        public SUITKeyMap<T> FromSUIT(string d)
+        public SUITKeyMap<T> FromJson(string jsonData)
         {
-            if (keymap.TryGetValue(d, out T value))
+            var deserializedKey = JsonSerializer.Deserialize<string>(jsonData);
+            if (KeyMap.TryGetValue(deserializedKey, out T value))
             {
                 v = value;
+                return this;
             }
             else
             {
                 throw new ArgumentException("Unknown key.");
             }
-
-            return this;
         }
 
         public T ToSUIT()
@@ -56,10 +56,25 @@ namespace SuitSolution.Services
             return v;
         }
 
+        public SUITKeyMap<T> FromSUIT(string d)
+        {
+            TreeBranch.Append(typeof(SUITKeyMap<T>).FullName);
+           if (KeyMap.TryGetValue(d, out T value))
+            {
+                v = value;
+                TreeBranch.Pop();
+                return this;
+            }
+            else
+            {
+                TreeBranch.Pop();
+                throw new ArgumentException("Unknown key.");
+            }
+        }
+
         public string ToDebug()
         {
-            var s = v.ToString() + " / " + ToJson() + " /";
-            return s;
+            return $"{v} / {ToJson()} /";
         }
     }
 }

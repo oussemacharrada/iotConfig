@@ -1,89 +1,96 @@
 using System;
 using SuitSolution.Interfaces;
+using System;
+using SuitSolution.Services;
 
-
-public class SUITRaw : ISUITMember
+namespace SuitSolution.Services
 {
-    public object v;
-
-    public SUITRaw() { }
-
-    public SUITRaw(object value)
+    public class SUITRaw 
     {
-        v = value;
-    }
+        public object v;
 
-    public object ToJson()
-    {
-        return v;
-    }
+        public SUITRaw() { }
 
-    public void FromJson(object data)
-    {
-        v = data;
-    }
+        public SUITRaw(object value)
+        {
+            v = value;
+        }
 
-    public object ToSUIT()
-    {
-        return v;
-    }
+        public object ToJson()
+        {
+            return v;
+        }
 
-    public void FromSUIT(object data)
-    {
-        v = data;
-    }
+        public void FromJson(object data)
+        {
+            v = data;
+        }
 
-    public string ToDebug(int indent)
-    {
-        return v.ToString();
+        public object ToSUIT()
+        {
+            return v;
+        }
+
+        public void FromSUIT(object data)
+        {
+            v = data;
+        }
+
+        public string ToDebug(string indent)
+        {
+            return v?.ToString() ?? string.Empty;
+        }
     }
 }
 
-public class SUITNil : ISUITMember
-{
-    public object ToJson()
-    {
-        return null;
-    }
 
-    public void FromJson(object data)
+    public class SUITNil 
     {
-        if (data != null)
+        public object ToJson()
         {
-            throw new Exception("Expected Nil");
+            return null;
+        }
+
+        public void FromJson(object data)
+        {
+            if (data != null)
+            {
+                throw new Exception("Expected Nil");
+            }
+        }
+
+        public object ToSUIT()
+        {
+            return null;
+        }
+
+        public void FromSUIT(object data)
+        {
+            if (data != null)
+            {
+                throw new Exception("Expected Nil");
+            }
+        }
+
+        public string ToDebug(string indent)
+        {
+            return "F6 / nil /";
         }
     }
 
-    public object ToSUIT()
-    {
-        return null;
-    }
-
-    public void FromSUIT(object data)
-    {
-        if (data != null)
-        {
-            throw new Exception("Expected Nil");
-        }
-    }
-
-    public string ToDebug(int indent)
-    {
-        return "F6 / nil /";
-    }
-}
 
 public class SUITTStr : SUITRaw
 {
     public SUITTStr()
     {
     }
+
     public SUITTStr(string data)
     {
         this.v = data;
     }
 
-    public new SUITTStr FromJson(object data)
+    public new  SUITTStr FromJson(object data)
     {
         v = data.ToString();
         return this;
@@ -95,7 +102,7 @@ public class SUITTStr : SUITRaw
         return this;
     }
 
-    public string ToDebug(int indent)
+    public string ToDebug(string indent)
     {
         return "'" + v.ToString() + "'";
     }

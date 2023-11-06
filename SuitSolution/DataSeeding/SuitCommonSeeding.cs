@@ -5,6 +5,7 @@ using Bogus;
 using SuitSolution.Services;
 public class SUITComponentIdSeeder
 {
+    
     public static SUITComponentId GenerateRandomSUITComponentId()
     {
         var faker = new Faker();
@@ -117,26 +118,35 @@ public class COSESignDataSeeder
             .RuleFor(p => p.Signature, f => CBORObject.Null);
     }
 }
+
 public class COSETaggedAuthDataSeeder
 {
-    public static Faker<COSETaggedAuth> GenerateCOSETaggedAuth()
+    public static List<COSETaggedAuth> GenerateCOSETaggedAuth(int itemCount)
     {
-        return new Faker<COSETaggedAuth>()
-            .RuleFor(p => p.CoseSign, f => COSESignDataSeeder.GenerateCOSESign().Generate())
-            .RuleFor(p => p.CoseSign1, f => COSESign1DataSeeder.GenerateCOSESign1().Generate())
-            .RuleFor(p => p.CoseMac, f => COSE_MacDataSeeder.GenerateCOSE_Mac().Generate())
-            .RuleFor(p => p.CoseMac0, f => COSE_Mac0DataSeeder.GenerateCOSE_Mac0().Generate());
+        var faker = new Faker<COSETaggedAuth>()
+                .CustomInstantiator(f => new COSETaggedAuth())
+                .RuleFor(p => p.CoseSign, f => COSESignDataSeeder.GenerateCOSESign().Generate())
+                .RuleFor(p => p.CoseSign1, f => COSESign1DataSeeder.GenerateCOSESign1().Generate())
+                .RuleFor(p => p.CoseMac, f => COSE_MacDataSeeder.GenerateCOSE_Mac().Generate())
+                .RuleFor(p => p.CoseMac0, f => COSE_Mac0DataSeeder.GenerateCOSE_Mac0().Generate());            ;
+
+        return faker.Generate(itemCount);
     }
 }
+
 
 public class COSEListDataSeeder
 {
     public static COSEList GenerateCOSEList(int itemCount)
     {
-        return new Faker<COSEList>()
-            .RuleFor(p => p.items, f => COSETaggedAuthDataSeeder.GenerateCOSETaggedAuth().Generate(itemCount));
+        var faker = new Faker<COSEList>()
+            .CustomInstantiator(f => new COSEList())
+            .RuleFor(p => p.Items, f => COSETaggedAuthDataSeeder.GenerateCOSETaggedAuth(itemCount));
+
+        return faker.Generate();
     }
 }
+
 
 public class SUITBytesDataSeeder
 {
@@ -162,20 +172,26 @@ public class SUITCmdDataSeeder
     {
         var suitCmds = new List<SUITCommandContainer.SUITCmd>();
 
-        var cmdFaker = new Faker<SUITCommandContainer.SUITCmd>()
-            .RuleFor(cmd => cmd.json_key, f => f.Commerce.ProductName())
-            .RuleFor(cmd => cmd.suit_key, f => f.Random.Number(1, 10).ToString())
-            .RuleFor(cmd => cmd.dep_params, f => f.Make(3, () => f.Commerce.ProductName()));
+        var containerFaker = new Faker<SUITCommandContainer>()
+            .CustomInstantiator(f => new SUITCommandContainer(
+                f.Commerce.ProductName(),
+                f.Random.Number(1, 10).ToString(),
+                typeof(string), // You can replace this with any other type if needed
+                new List<string> { f.Commerce.ProductName(), f.Commerce.ProductName() } // Example dependent parameters
+            ));
 
         for (int i = 0; i < numberOfCmds; i++)
         {
-            var cmd = cmdFaker.Generate();
+            var container = containerFaker.Generate();
+            var cmd = container.CreateCommand();
             suitCmds.Add(cmd);
         }
 
         return suitCmds;
     }
 }
+
+
 
 public static class SUITCommandContainerDataSeeder
 {
@@ -184,10 +200,12 @@ public static class SUITCommandContainerDataSeeder
         var containers = new List<SUITCommandContainer>();
 
         var containerFaker = new Faker<SUITCommandContainer>()
-            .RuleFor(container => container.json_key, f => f.Lorem.Word())
-            .RuleFor(container => container.suit_key, f => f.Random.Number(1, 10).ToString())
-            .RuleFor(container => container.dep_params, f => f.Make(3, () => f.Lorem.Word()))
-            .RuleFor(container => container.argtype, typeof(SUITCommandContainer.SUITCmd)); // Specify the argument type's fully qualified name
+            .CustomInstantiator(f => new SUITCommandContainer(
+                f.Lorem.Word(),
+                f.Random.Number(1, 10).ToString(),
+                typeof(string), // You can replace this with any other type if needed
+                new List<string> { f.Lorem.Word(), f.Lorem.Word(), f.Lorem.Word() } // Example dependent parameters
+            ));
 
         for (int i = 0; i < numberOfContainers; i++)
         {
@@ -196,40 +214,6 @@ public static class SUITCommandContainerDataSeeder
         }
 
         return containers;
-    }
-}
-
-
-namespace SuitSolution.Services
-{
-    public static class SUITCommandDataSeeder
-    {
-        public static List<SUITCommand> SeedSUITCommands(int numberOfCommands)
-        {
-            var commands = new List<SUITCommand>();
-
-            var commandFaker = new Faker<SUITCommand>()
-                .RuleFor(command => command.commands, f => SUITCommandContainerDataSeeder.SeedSUITCommandContainers(numberOfCommands))
-                .RuleFor(command => command.ToSUIT(), f => new Dictionary<string, object>
-                {
-                    { "command-id", f.Lorem.Word() },
-                    { "command-arg", f.Lorem.Word() }
-                })
-                .RuleFor(command => command.ToJson(), f => new Dictionary<string, object>
-                {
-                    { "command-id", f.Lorem.Word() },
-                    { "command-arg", f.Lorem.Word() }
-                })
-                .RuleFor(command => command.ToDebug("dummy_indent"), f => $"Debug info for SUITCommand with indent dummy_indent");
-
-            for (int i = 0; i < numberOfCommands; i++)
-            {
-                var command = commandFaker.Generate();
-                commands.Add(command);
-            }
-
-            return commands;
-        }
     }
 }
 
@@ -513,39 +497,48 @@ public static class SUITPosIntDataSeeder
 
 
 
-    public static class SUITSequenceDataSeeder
+   
+public static class SUITSequenceDataSeeder
+{
+    public static SUITSequence SeedSUITSequence(int numberOfItems, int numberOfCommandsPerItem)
     {
-        public static SUITSequence SeedSUITSequence(int numberOfItems, int numberOfCommandsPerItem)
+        var sequence = new SUITSequence();
+
+        for (int i = 0; i < numberOfItems; i++)
         {
-            var sequence = new SUITSequence();
+            var commands = SeedSUITCommands(numberOfCommandsPerItem);
 
-            for (int i = 0; i < numberOfItems; i++)
+            foreach (var suitCommand in commands)
             {
-                var commands = SeedSUITCommands(numberOfCommandsPerItem);
-
-                foreach (var suitCommand in commands)
-                {
-                    sequence.Items.Add(suitCommand); 
-                }
+                sequence.Items.Add(suitCommand); 
             }
-
-            return sequence;
         }
 
-        public static List<SUITCommand> SeedSUITCommands(int numberOfCommands)
-        {
-            var commands = new List<SUITCommand>();
-
-            for (int i = 0; i < numberOfCommands; i++)
-            {
-                var command = new SUITCommand();
-                commands.Add(command);
-            }
-
-            return commands;
-        }
+        return sequence;
     }
 
+    public static List<SUITCommandContainer.SUITCmd> SeedSUITCommands(int numberOfCommands)
+    {
+        var commands = new List<SUITCommandContainer.SUITCmd>();
+
+        var containerFaker = new Faker<SUITCommandContainer>()
+            .CustomInstantiator(f => new SUITCommandContainer(
+                f.Lorem.Word(),
+                f.Random.Number(1, 10).ToString(),
+                typeof(string), // You can replace this with any other type if needed
+                new List<string> { f.Lorem.Word(), f.Lorem.Word(), f.Lorem.Word() } // Example dependent parameters
+            ));
+
+        for (int i = 0; i < numberOfCommands; i++)
+        {
+            var container = containerFaker.Generate();
+            var command = container.CreateCommand();
+            commands.Add(command);
+        }
+
+        return commands;
+    }
+}
 
 public static class SUITTryEachDataSeeder
 {

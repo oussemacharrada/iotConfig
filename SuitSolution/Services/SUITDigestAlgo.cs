@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using SuitSolution.Interfaces;
 using SuitSolution.Services;
 
@@ -9,9 +10,9 @@ public class SUITDigestAlgo : SUITKeyMap<int>, ISUITConvertible<SUITDigestAlgo>
     {
     }
 
-    private static Dictionary<string, int> MkKeyMaps()
+    private static Dictionary<object, int> MkKeyMaps()
     {
-        return new Dictionary<string, int>
+        return new Dictionary<object, int>
         {
             { "sha224", 1 },
             { "sha256", 2 },
@@ -20,19 +21,19 @@ public class SUITDigestAlgo : SUITKeyMap<int>, ISUITConvertible<SUITDigestAlgo>
         };
     }
 
-    public new SUITDigestAlgo FromSUIT(Dictionary<string, object> suitDict)
+    public new SUITDigestAlgo FromSUIT(Dictionary<object, object> suitDict)
     {
         if (suitDict == null)
         {
             throw new ArgumentNullException(nameof(suitDict), "Invalid SUIT data for SUITDigestAlgo.");
         }
 
-        keymap.Clear();
+        KeyMap.Clear();
         foreach (var pair in suitDict)
         {
             if (pair.Value is int value)
             {
-                keymap[pair.Key] = value;
+                KeyMap[pair.Key] = value;
             }
         }
 
@@ -46,35 +47,38 @@ public class SUITDigestAlgo : SUITKeyMap<int>, ISUITConvertible<SUITDigestAlgo>
             throw new ArgumentNullException(nameof(jsonData), "Invalid JSON data for SUITDigestAlgo.");
         }
 
-        keymap.Clear();
+        KeyMap.Clear();
         foreach (var pair in jsonData)
         {
             if (pair.Value is int value)
             {
-                keymap[pair.Key] = value;
+                KeyMap[pair.Key] = value;
             }
         }
 
         return this;
     }
 
-    public new Dictionary<string, object> ToSUIT()
+    public new dynamic ToSUIT()
     {
-        var suitDict = new Dictionary<string, object>();
-        foreach (var pair in keymap)
+        var suitDict = new Dictionary<object, object>();
+        foreach (var pair in KeyMap)
         {
             suitDict[pair.Key] = pair.Value;
         }
         return suitDict;
     }
 
-    public Dictionary<string, object> ToJson()
+    public dynamic ToJson()
     {
-        throw new NotImplementedException();
+        // Convert the keymap to JSON format
+        return JsonSerializer.Serialize(KeyMap, new JsonSerializerOptions { WriteIndented = true });
     }
 
     public string ToDebug(string indent)
     {
-        throw new NotImplementedException();
+        // Convert the keymap to a debug string format
+        var debugList = KeyMap.Select(kvp => $"{indent}{kvp.Key}: {kvp.Value}").ToList();
+        return $"[\n{string.Join(",\n", debugList)}\n{indent}]";
     }
 }

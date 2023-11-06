@@ -1,6 +1,6 @@
-using System;
 using PeterO.Cbor;
 using SuitSolution.Interfaces;
+using SuitSolution.Services;
 
 public class SUITPosInt : SUITInt
 {
@@ -21,35 +21,38 @@ public class SUITPosInt : SUITInt
         this.v = cidx;
     }
 
-
-    public ISUITObject FromJson(string json)
+    public new ISUITObject FromJson(string json)
     {
+        TreeBranch.Append("SUITPosInt");
+
         if (int.TryParse(json, out int _v) && _v >= 0)
         {
             this.v = _v;
+            TreeBranch.Pop();
             return this;
         }
         else
         {
+            TreeBranch.Pop();
             throw new Exception("Positive Integers must be >= 0");
         }
     }
 
-    public object FromSUIT(object cborObject)
+    public new object FromSUIT(object cborObject)
     {
+        TreeBranch.Append("SUITPosInt");
+
         int _v = ((CBORObject)cborObject).AsInt32();
         if (_v >= 0)
         {
             this.v = _v;
+            TreeBranch.Pop();
             return this;
         }
         else
         {
+            TreeBranch.Pop();
             throw new Exception("Positive Integers must be >= 0");
         }
     }
-
-
-    
-
 }

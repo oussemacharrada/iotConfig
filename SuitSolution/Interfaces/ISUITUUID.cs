@@ -13,15 +13,15 @@ public interface ISUITConvertible
     Dictionary<string, object> ToJson();
     string ToDebug(string indent);
     void FromSUIT(Dictionary<string, object> suitDict);
-    void   FromJson(Dictionary<string, object> jsonData);
+    object FromJson(Dictionary<string, object> jsonData);
 }
 
 public interface ISUITConvertible<T> 
 {
-    new  T FromSUIT(Dictionary<string, object> suitDict);
+    new  T FromSUIT(Dictionary<object, object> suitDict);
     new T FromJson(Dictionary<string, object> jsonData);
-    Dictionary<string, object> ToSUIT();
-    Dictionary<string, object> ToJson();
+    dynamic ToSUIT();
+    dynamic ToJson();
     string ToDebug(string indent);
 
 
@@ -29,7 +29,7 @@ public interface ISUITConvertible<T>
 
 public interface IJsonSerializable
 {
-    Dictionary<string, object> ToJson();
+    dynamic ToJson();
 }
 
 public interface ISUITObject

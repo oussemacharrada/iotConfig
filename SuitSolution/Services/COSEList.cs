@@ -1,53 +1,37 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using SuitSolution.Interfaces;
-using SuitSolution.Services;
 
 public class COSEList : SUITManifestArray<COSETaggedAuth>, ISUITConvertible<COSEList>
 {
-    public SUITBWrapField<COSETaggedAuth> field { get; set; }
+    public SUITBWrapField<COSETaggedAuth> Field { get; set; }
 
     public COSEList()
     {
-        field = new SUITBWrapField<COSETaggedAuth>
+        Field = new SUITBWrapField<COSETaggedAuth>
         {
             v = new COSETaggedAuth()
         };
     }
 
-    public Dictionary<string, object> ToSUIT()
+
+    public dynamic ToSUIT()
     {
-        var suitList = new List<object>();
-        foreach (var item in items)
-        {
-            suitList.Add(item.ToSUIT());
-        }
-        return new Dictionary<string, object>
-        {
-            { "items", suitList }
-        };
+        return base.ToSuit();
     }
 
     public Dictionary<string, object> ToJson()
     {
-        var jsonList = new List<object>();
-        foreach (var item in items)
-        {
-            jsonList.Add(item.ToJson());
-        }
         return new Dictionary<string, object>
         {
-            { "items", jsonList }
+            { "items", Items.Select(item => item.ToJson()).ToList() }
         };
     }
 
     public string ToDebug(string indent)
     {
-        throw new NotImplementedException();
+        return base.ToDebug(indent);
     }
 
-    public COSEList FromSUIT(Dictionary<string, object> suitDict)
+    public COSEList FromSUIT(Dictionary<object, object> suitDict)
     {
         if (suitDict == null || !suitDict.ContainsKey("items"))
         {
@@ -55,14 +39,12 @@ public class COSEList : SUITManifestArray<COSETaggedAuth>, ISUITConvertible<COSE
         }
 
         var itemsList = (List<object>)suitDict["items"];
-        items = new List<COSETaggedAuth>();
-
-        foreach (var item in itemsList)
+        Items = itemsList.Select(item => 
         {
             var coseTaggedAuth = new COSETaggedAuth();
-            coseTaggedAuth.FromSUIT((Dictionary<string, object>)item);
-            items.Add(coseTaggedAuth);
-        }
+            coseTaggedAuth.FromSUIT((Dictionary<object, object>)item);
+            return coseTaggedAuth;
+        }).ToList();
 
         return this;
     }
@@ -75,14 +57,12 @@ public class COSEList : SUITManifestArray<COSETaggedAuth>, ISUITConvertible<COSE
         }
 
         var itemsList = (List<object>)jsonData["items"];
-        items = new List<COSETaggedAuth>();
-
-        foreach (var item in itemsList)
+        Items = itemsList.Select(item => 
         {
             var coseTaggedAuth = new COSETaggedAuth();
             coseTaggedAuth.FromJson((Dictionary<string, object>)item);
-            items.Add(coseTaggedAuth);
-        }
+            return coseTaggedAuth;
+        }).ToList();
 
         return this;
     }

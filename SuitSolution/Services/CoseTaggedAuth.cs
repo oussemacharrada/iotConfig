@@ -12,28 +12,30 @@ public class COSETaggedAuth : COSETagChoice, ISUITConvertible<COSETaggedAuth>
     public COSE_Mac CoseMac { get; set; }
     public COSE_Mac0 CoseMac0 { get; set; }
 
+    private readonly ReadOnlyDictionary<string, ManifestKey> fields;
+
     public COSETaggedAuth()
     {
         fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields(
-            ("cose_sign", "98", () => CoseSign),
-            ("cose_sign1", "18", () => CoseSign1),
-            ("cose_mac", "97", () => CoseMac),
-            ("cose_mac0", "17", () => CoseMac0)
+            ("cose_sign", 96, () => CoseSign,"CoseSign"),
+            ("cose_sign1", 18, () => CoseSign1,"CoseSign1"),
+            ("cose_mac", 97, () => CoseMac,"CoseMac"),
+            ("cose_mac0", 17, () => CoseMac0,"CoseMac0")
         ));
     }
 
-    public Dictionary<string, object> ToSUIT()
+    public dynamic ToSUIT()
     {
         var cborMap = CBORObject.NewMap();
 
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
+            var fieldName = fieldInfo.JsonKey;
             var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
 
             if (fieldValue != null)
             {
-                var suitKey = fieldInfo.suit_key;
+                var suitKey = fieldInfo.SuitKey;
                 var suitValue = (fieldValue as ISUITConvertible)?.ToSUIT();
 
                 if (suitValue != null)
@@ -49,13 +51,13 @@ public class COSETaggedAuth : COSETagChoice, ISUITConvertible<COSETaggedAuth>
         };
     }
 
-    public Dictionary<string, object> ToJson()
+    public dynamic ToJson()
     {
         var jsonDict = new Dictionary<string, object>();
 
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
+            var fieldName = fieldInfo.JsonKey;
             var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
 
             if (fieldValue != null)
@@ -70,7 +72,7 @@ public class COSETaggedAuth : COSETagChoice, ISUITConvertible<COSETaggedAuth>
         };
     }
 
-    public COSETaggedAuth FromSUIT(Dictionary<string, object> suitDict)
+    public COSETaggedAuth FromSUIT(Dictionary<object, object> suitDict)
     {
         if (suitDict == null || !suitDict.ContainsKey("COSETaggedAuth"))
         {
@@ -81,8 +83,8 @@ public class COSETaggedAuth : COSETagChoice, ISUITConvertible<COSETaggedAuth>
 
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
-            var suitKey = fieldInfo.suit_key;
+            var fieldName = fieldInfo.JsonKey;
+            var suitKey = fieldInfo.SuitKey;
 
             if (cborMap.ContainsKey(suitKey))
             {
@@ -119,7 +121,7 @@ public class COSETaggedAuth : COSETagChoice, ISUITConvertible<COSETaggedAuth>
 
         foreach (var fieldInfo in fields.Values)
         {
-            var fieldName = fieldInfo.json_key;
+            var fieldName = fieldInfo.JsonKey;
 
             if (jsonDict.ContainsKey(fieldName))
             {

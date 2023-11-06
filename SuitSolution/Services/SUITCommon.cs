@@ -13,13 +13,26 @@ namespace SuitSolution.Services
         public SUITBWrapField<SUITDependencies> dependencies { get; set; } = new SUITBWrapField<SUITDependencies>();
         public SUITComponents components { get; set; }= new SUITComponents();
         public SUITBWrapField<SUITSequenceComponentReset> commonSequence { get; set; }= new SUITBWrapField<SUITSequenceComponentReset>();
+public SUITCommon(SUITSequence sequence)
+{
+    var common = new SUITSequenceComponentReset(sequence);
+    
+    this.commonSequence.v = common; 
+}
+
+public dynamic ToSUIT()
+{
+    var dic = base.ToSUIT();
+    dic.Add(4,commonSequence.ToSUIT());
+    return dic;
+}
 
         public SUITCommon()
         {
             fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields(
-                ("dependencies", "1", () => dependencies),
-                ("components", "2", () => components),
-                ("common-sequence", "4", () => commonSequence)
+                ("dependencies", 1, () => dependencies,"dependencies"),
+                ("components", 2, () => components,"components"),
+                ("common_sequence", 4, () => commonSequence,"commonSequence")
             ));
         }
         
@@ -38,7 +51,7 @@ namespace SuitSolution.Services
             }
         }
       
-        public SUITCommon FromSUIT(Dictionary<string, object> suitDict)
+        public SUITCommon FromSUIT(Dictionary<object, object> suitDict)
         {
             if (suitDict == null)
             {
@@ -84,22 +97,20 @@ namespace SuitSolution.Services
         {
             throw new NotImplementedException();
         }
-     
-     
+
+        
 
 
-      
-
-        public Dictionary<string, object> ToJson()
+        public dynamic ToJson()
         {
-            var commonDict = new Dictionary<string, object>();
+            var commonDict = new Dictionary<int, object>();
             foreach (var fieldInfo in fields.Values)
             {
-                var fieldName = fieldInfo.json_key;
+                var fieldName = fieldInfo.JsonKey;
                 var fieldValue = GetType().GetProperty(fieldName)?.GetValue(this);
                 if (fieldValue != null)
                 {
-                    var suitKey = fieldInfo.suit_key;
+                    var suitKey = fieldInfo.SuitKey;
                     var suitValue = (fieldValue as dynamic).ToJson();
                     commonDict[suitKey] = suitValue;
                 }

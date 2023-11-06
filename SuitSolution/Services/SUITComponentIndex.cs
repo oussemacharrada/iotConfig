@@ -1,25 +1,27 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SuitSolution.Services
 {
     public class SUITComponentIndex : SUITComponentId
     {
-        public int ToSUIT()
+        public new int ToSUIT()
         {
             return SUITCommonInfo.ComponentIdToIndex(this);
         }
 
         public new SUITComponentIndex FromSUIT(int d)
         {
-            return (SUITComponentIndex)base.FromSUIT(SUITCommonInfo.ComponentIds[d].ToSUIT());
+            base.FromSUIT(SUITCommonInfo.ComponentIds[d].ToSUIT() as List<object>);
+            return this;
         }
 
-        public string ToDebug(string indent)
+        public new string ToDebug(string indent)
         {
             string oneIndent = "    "; // Define your indentation here
             string newIndent = indent + oneIndent;
-            return $"{ToSUIT()} / [{newIndent}] /";
+            return $"{ToSUIT()} / [{string.Join("", componentIds.Select(item => item.ToDebug(newIndent)))}] /";
         }
     }
 }

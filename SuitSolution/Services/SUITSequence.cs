@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using SuitSolution.Interfaces;
 
 namespace SuitSolution.Services
@@ -13,20 +14,102 @@ namespace SuitSolution.Services
             Items = new List<SUITCommand>();
         }
 
-        public void FromSUIT(List<object> suitList)
+        public SUITSequence FromSUIT(Dictionary<object, object> suitDict)
+        {
+            if (suitDict == null)
+            {
+                throw new ArgumentNullException(nameof(suitDict));
+            }
+
+            if (!suitDict.TryGetValue("items", out var itemsObj) || !(itemsObj is List<object> suitList))
+            {
+                throw new ArgumentException("Invalid or missing 'items' in the SUIT dictionary.");
+            }
+
+            FromSUIT(suitList);
+            return this;
+        }
+
+        public SUITSequence FromJson(Dictionary<string, object> jsonData)
+        {
+            if (jsonData == null)
+            {
+                throw new ArgumentNullException(nameof(jsonData));
+            }
+
+            if (!jsonData.TryGetValue("items", out var itemsObj) || !(itemsObj is List<Dictionary<string, object>> jsonList))
+            {
+                throw new ArgumentException("Invalid or missing 'items' in the JSON data.");
+            }
+
+            Items.Clear();
+            foreach (var itemData in jsonList)
+            {
+                var cmd = new SUITCommand().FromJson(itemData);
+                Items.Add(cmd);
+            }
+
+            return this;
+        }
+
+        public dynamic ToSUIT()
+        {
+            var suitList = new List<object>();
+            foreach (var item in Items)
+            {
+                var cmdItem = item as SUITCommandContainer.SUITCmd;
+                if (cmdItem != null)
+                {
+                    suitList.AddRange(cmdItem.ToSUIT(cmdItem.SuitKey)); // Use the SuitKey property here
+                }
+            }
+            return new Dictionary<string, object>
+            {
+                { "items", suitList }
+            };
+        }
+
+
+        public dynamic ToJson()
+        {
+            var jsonList = new List<object>();
+            foreach (var item in Items)
+            {
+                if (item != null)
+                {
+                    jsonList.Add(item.ToJson());
+                }
+                else
+                {
+                 throw new (" i told you  item is null exception ") ;
+                }
+            }
+
+            return new Dictionary<string, object>
+            {
+                { "items", jsonList }
+            };
+        }
+
+
+        public string ToDebug(string indent)
+        {
+            return string.Join(Environment.NewLine, Items.Select(item => item.ToJson().ToString()));
+        }
+
+        private void FromSUIT(List<object> suitList)
         {
             if (suitList == null)
             {
                 throw new ArgumentNullException(nameof(suitList));
             }
 
-            Items = new List<SUITCommand>();
-            foreach (var item in suitList)
+            Items.Clear();
+            for (int i = 0; i < suitList.Count; i += 2)
             {
-                if (item is Dictionary<string, object> commandData)
+                if (suitList[i] is string suitKey && suitList[i + 1] is Dictionary<string, object> commandData)
                 {
-                    var cmd = new SUITCommand();
-                    cmd.FromSUIT(commandData);
+                    var cmd = new SUITCommand().FromSUIT(new List<object> { suitKey, commandData });
                     Items.Add(cmd);
                 }
                 else
@@ -34,55 +117,6 @@ namespace SuitSolution.Services
                     throw new ArgumentException("Invalid object type within the list.");
                 }
             }
-        }
-
-        public SUITSequence FromSUIT(Dictionary<string, object> suitDict)
-        {
-            throw new NotImplementedException();
-        }
-
-        public SUITSequence FromJson(Dictionary<string, object> jsonData)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Dictionary<string, object> ToSUIT()
-        {
-            var suitList = new List<object>();
-            foreach (var item in Items)
-            {
-                suitList.Add(item.ToSUIT());
-            }
-
-            // Create a dictionary to represent the SUITSequence
-            var suitDict = new Dictionary<string, object>
-            {
-                { "items", suitList }
-            };
-
-            return suitDict;
-        }
-
-        public Dictionary<string, object> ToJson()
-        {
-            var jsonList = new List<object>();
-            foreach (var item in Items)
-            {
-                jsonList.Add(item.ToJson());
-            }
-
-            // Create a dictionary to represent the JSON output
-            var jsonDict = new Dictionary<string, object>
-            {
-                { "items", jsonList }
-            };
-
-            return jsonDict;
-        }
-
-        public string ToDebug(string indent)
-        {
-            throw new NotImplementedException();
         }
     }
 }

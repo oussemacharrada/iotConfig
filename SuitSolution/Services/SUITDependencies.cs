@@ -6,98 +6,118 @@ namespace SuitSolution.Services
 {
     public class SUITDependencies : List<SUITDependency>, ISUITConvertible<SUITDependencies>
     {
-        public new SUITDependencies FromSUIT(Dictionary<string, object> suitDict)
+        // Convert from SUIT format to object
+        public SUITDependencies FromSUIT(Dictionary<object, object> suitDict)
         {
-            if (suitDict == null)
-            {
-                throw new ArgumentNullException(nameof(suitDict), "Invalid SUIT data for SUITDependencies.");
-            }
-
-            // Clear the existing list before adding new dependencies
-            this.Clear();
-
-            if (suitDict.ContainsKey("dependencies") && suitDict["dependencies"] is List<object> dependencyList)
-            {
-                foreach (var dependencyData in dependencyList)
-                {
-                    if (dependencyData is Dictionary<string, object> dependencyDict)
-                    {
-                        var dependency = new SUITDependency();
-                        dependency.FromSUIT(dependencyDict);
-                        this.Add(dependency);
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Invalid object type within the 'dependencies' list.");
-                    }
-                }
-            }
-
-            return this;
+            return FromData(suitDict, true);
         }
 
-        public new SUITDependencies FromJson(Dictionary<string, object> jsonData)
+        // Convert from JSON format to object
+        public SUITDependencies FromJson(Dictionary<string, object> jsonData)
         {
-            if (jsonData == null)
-            {
-                throw new ArgumentNullException(nameof(jsonData), "Invalid JSON data for SUITDependencies.");
-            }
-
-            // Clear the existing list before adding new dependencies
-            this.Clear();
-
-            if (jsonData.ContainsKey("dependencies") && jsonData["dependencies"] is List<object> dependencyList)
-            {
-                foreach (var dependencyData in dependencyList)
-                {
-                    if (dependencyData is Dictionary<string, object> dependencyDict)
-                    {
-                        var dependency = new SUITDependency();
-                        dependency.FromJson(dependencyDict);
-                        this.Add(dependency);
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Invalid object type within the 'dependencies' list.");
-                    }
-                }
-            }
-
-            return this;
+            return FromJsonData(jsonData, false);
         }
 
-        public Dictionary<string, object> ToSUIT()
+        // Convert to SUIT format
+        public dynamic ToSUIT()
         {
-            var suitList = new List<object>();
-            foreach (var dependency in this)
-            {
-                suitList.Add(dependency.ToSUIT());
-            }
-
-            return new Dictionary<string, object>
-            {
-                { "dependencies", suitList }
-            };
+            return ToData();
         }
 
-        public Dictionary<string, object> ToJson()
+        dynamic ISUITConvertible<SUITDependencies>.ToJson()
         {
-            var jsonList = new List<object>();
-            foreach (var dependency in this)
-            {
-                jsonList.Add(dependency.ToJson());
-            }
-
-            return new Dictionary<string, object>
-            {
-                { "dependencies", jsonList }
-            };
+            return ToJson();
         }
 
         public string ToDebug(string indent)
         {
             throw new NotImplementedException();
         }
+
+        // Convert to JSON format
+        public Dictionary<string, object> ToJson()
+        {
+            return ToData();
+        }
+
+        // Helper method to convert from SUIT or JSON format to object
+        private SUITDependencies FromData(Dictionary<object, object> dataDict, bool isSUIT)
+        {
+            if (dataDict == null)
+            {
+                throw new ArgumentNullException(nameof(dataDict), "Invalid data for SUITDependencies.");
+            }
+
+            this.Clear();
+
+            if (dataDict.ContainsKey("dependencies") && dataDict["dependencies"] is List<object> dependencyList)
+            {
+                foreach (var dependencyData in dependencyList)
+                {
+                    if (dependencyData is Dictionary<object, object> dependencyDict)
+                    {
+                        var dependency = new SUITDependency();
+                            dependency.FromSUIT(dependencyDict);
+                  
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid object type within the 'dependencies' list.");
+                    }
+                }
+            }
+
+            // Update the static Dependencies property of SUITCommonInfo
+            SUITCommonInfo.Dependencies = this;
+
+            return this;
+        }
+        private SUITDependencies FromJsonData(Dictionary<string, object> dataDict, bool isSUIT)
+        {
+            if (dataDict == null)
+            {
+                throw new ArgumentNullException(nameof(dataDict), "Invalid data for SUITDependencies.");
+            }
+
+            this.Clear();
+
+            if (dataDict.ContainsKey("dependencies") && dataDict["dependencies"] is List<object> dependencyList)
+            {
+                foreach (var dependencyData in dependencyList)
+                {
+                    if (dependencyData is Dictionary<string, object> dependencyDict)
+                    {
+                        var dependency = new SUITDependency();
+                       
+                            dependency.FromJson(dependencyDict);
+                        this.Add(dependency);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid object type within the 'dependencies' list.");
+                    }
+                }
+            }
+
+            // Update the static Dependencies property of SUITCommonInfo
+            SUITCommonInfo.Dependencies = this;
+
+            return this;
+        }
+
+        // Helper method to convert to SUIT or JSON format
+        private Dictionary<string, object> ToData()
+        {
+            var dataList = new List<object>();
+            foreach (var dependency in this)
+            {
+                dataList.Add(dependency.ToSUIT()); // Convert each dependency to SUIT format
+            }
+
+            return new Dictionary<string, object>
+            {
+                { "dependencies", dataList }
+            };
+        }
     }
 }
-

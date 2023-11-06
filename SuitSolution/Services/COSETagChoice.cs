@@ -7,8 +7,8 @@ public class COSETagChoice : SUITManifestDict
     public COSETagChoice()
     {
         fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields(
-            ("field1", "1", () => new COSETagChoiceField1()),
-            ("field2", "2", () => new COSETagChoiceField2())
+            ("field1", 1, () => new COSETagChoiceField1(),"COSETagChoiceField1"),
+            ("field2", 2, () => new COSETagChoiceField2(),"COSETagChoiceField2")
         ));
     }
 

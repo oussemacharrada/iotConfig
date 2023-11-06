@@ -1,41 +1,59 @@
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using SuitSolution.Interfaces;
 
-namespace SuitSolution.Services;
-using System;
-
-public class SUITUUID : ISUITUUID
+namespace SuitSolution.Services
 {
-    private Guid _uuid;
-
-    public SUITUUID()
+    public class SUITUUID : ISUITUUID
     {
-        _uuid = Guid.NewGuid();
-    }
+        private Guid _uuid;
 
-    public SUITUUID(Guid uuid)
-    {
-        _uuid = uuid;
-    }
+        public SUITUUID()
+        {
+            _uuid = Guid.NewGuid();
+        }
 
-    public Guid UUID
-    {
-        get { return _uuid; }
-        set { _uuid = value; }
-    }
+        public SUITUUID(Guid uuid)
+        {
+            _uuid = uuid;
+        }
 
-    public byte[] ToSUIT()
-    {
-        return _uuid.ToByteArray();
-    }
+        public Guid UUID
+        {
+            get { return _uuid; }
+            set { _uuid = value; }
+        }
 
-    public void FromSUIT(Dictionary<string, object> data)
-    {
-        throw new NotImplementedException();
-    }
+        public byte[] ToSUIT()
+        {
+            return _uuid.ToByteArray();
+        }
 
-    public void FromSUIT(byte[] data)
-    {
-        _uuid = new Guid(data);
+        public void FromSUIT(Dictionary<string, object> data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void FromSUIT(byte[] data)
+        {
+            _uuid = new Guid(data);
+        }
+
+        public string ToJson()
+        {
+            return _uuid.ToString();
+        }
+
+        public SUITUUID FromJson(string jsonData)
+        {
+            _uuid = Guid.Parse(jsonData);
+            return this;
+        }
+
+        public string ToDebug(string indent)
+        {
+            return $"h'{JsonSerializer.Serialize(ToJson())}' / {_uuid} /";
+        }
     }
 }
-

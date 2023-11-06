@@ -15,19 +15,19 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 public class SUITEnvelope:SUITManifestDict {
     public SUITBWrapField<COSEList> Auth { get; set; }    = new SUITBWrapField<COSEList>();     
     public SUITBWrapField<SUITManifest> Manifest { get; set; } = new SUITBWrapField<SUITManifest>();
-    public SUITBWrapField<SUITSequence> deres { get; set; }= new SUITBWrapField<SUITSequence>();
-    public SUITBWrapField<SUITSequence> fetch { get; set; }= new SUITBWrapField<SUITSequence>();
-    public SUITBWrapField<SUITSequence> install { get; set; }= new SUITBWrapField<SUITSequence>();
-    public SUITBWrapField<SUITSequence> validate { get; set; }= new SUITBWrapField<SUITSequence>();
-    public SUITBWrapField<SUITSequence> load { get; set; }= new SUITBWrapField<SUITSequence>();
-    public SUITBWrapField<SUITSequence> run { get; set; }= new SUITBWrapField<SUITSequence>();
-    public SUITBWrapField<SUITText> text { get; set; }= new SUITBWrapField<SUITText>();
-    public SUITBytes coswid { get; set; }= new SUITBytes();
-    public SUITEnvelope()
-    {
+  //  public SUITBWrapField<SUITSequence> deres { get; set; }= new SUITBWrapField<SUITSequence>();
+   // public SUITBWrapField<SUITSequence> fetch { get; set; }= new SUITBWrapField<SUITSequence>();
+   // public SUITBWrapField<SUITSequence> install { get; set; }= new SUITBWrapField<SUITSequence>();
+   // public SUITBWrapField<SUITSequence> validate { get; set; }= new SUITBWrapField<SUITSequence>();
+   // public SUITBWrapField<SUITSequence> load { get; set; }= new SUITBWrapField<SUITSequence>();
+   // public SUITBWrapField<SUITSequence> run { get; set; }= new SUITBWrapField<SUITSequence>();
+   // public SUITBWrapField<SUITText> text { get; set; }= new SUITBWrapField<SUITText>();
+   // public SUITBytes coswid { get; set; }= new SUITBytes();
+      public SUITEnvelope()
+    {   
         fields = new ReadOnlyDictionary<string, ManifestKey>(MkFields(
-            ("Auth", "2", () => Auth),
-            ("Manifest", "3", () => Manifest)
+            ("Auth", 2, () => Auth,"Auth"),
+            ("Manifest", 3, () => Manifest,"Manifest")
          /*   ("deres", "7", () => deres),
             ("fetch", "8", () => fetch),
             ("install", "9", () => install),
@@ -60,26 +60,29 @@ public class SUITEnvelope:SUITManifestDict {
      
     }
 
-  
 
-    /*  public Dictionary<string, object> ToSUIT(string digestAlg)
-      {
-     var  map =    base.ToSUIT();
+     public new Dictionary<int, object> ToSUIT()
+     {
+         var map = new Dictionary<int, object>();
+
+
+
   
-            var suitList = base.ToSUIT();
+         if (Manifest != null)
+         {
+             map.Add( 2, CBORObject.NewMap().EncodeToBytes());
+         }   
+
+
+        if (Manifest != null)
+        {
+            map.Add( 3, Manifest.ToSUIT());
+        }   
+
+        return map;
+    }
     
-            var map = CBORObject.NewMap();
-           if (Auth != null)
-           {
-               map.Add("2", CBORObject.FromObject(Auth.v.ToSUIT()).EncodeToBytes());
-            }
-          
-            if (Manifest != null)
-            {
-                map.Add("3", Manifest.v.ToSUIT().EncodeToBytes());
-            }
-    */
-        //    suitList.Add("7", SerializationHelper.SerializeToBytes(deres.v.ToSUIT()));
+    //    suitList.Add("7", SerializationHelper.SerializeToBytes(deres.v.ToSUIT()));
 
         //   suitList.Add("8",SerializationHelper.SerializeToBytes(fetch.v.ToSUIT()));
 

@@ -1,6 +1,6 @@
 using System;
-using System.Text;
-using System.Text.Json;
+using System.Collections.Generic;
+using System.Linq;
 using SuitSolution.Exceptions;
 using SuitSolution.Interfaces;
 
@@ -20,12 +20,13 @@ namespace SuitSolution.Services
             v = bytes ?? throw new ArgumentNullException(nameof(bytes));
         }
 
-        
-        public SUITBytes FromSUIT(Dictionary<string, object> suitDict)
+        public SUITBytes FromData(Dictionary<object, object> dataDict)
         {
-            if (suitDict == null || !suitDict.TryGetValue("hex", out var hexValue))
+            TreeBranch.Append(typeof(SUITBytes).FullName);
+
+            if (dataDict == null || !dataDict.TryGetValue("hex", out var hexValue))
             {
-                throw new ArgumentException("Invalid SUIT data for SUITBytes.");
+                throw new ArgumentException("Invalid data for SUITBytes.");
             }
 
             if (hexValue is string hexString)
@@ -34,25 +35,19 @@ namespace SuitSolution.Services
             }
             else
             {
-                throw new ArgumentException("Invalid hex value in SUIT data.");
+                throw new ArgumentException("Invalid hex value in data.");
             }
 
+            TreeBranch.Pop();
             return this;
         }
-
-        public Dictionary<string, object> ToSUIT()
+        public SUITBytes FromJsonData(Dictionary<string, object> dataDict)
         {
-            return new Dictionary<string, object>
-            {
-                { "hex", ToHexString(v) }
-            };
-        }
+            TreeBranch.Append(typeof(SUITBytes).FullName);
 
-        public SUITBytes FromJson(Dictionary<string, object> jsonData)
-        {
-            if (jsonData == null || !jsonData.TryGetValue("hex", out var hexValue))
+            if (dataDict == null || !dataDict.TryGetValue("hex", out var hexValue))
             {
-                throw new ArgumentException("Invalid JSON data for SUITBytes.");
+                throw new ArgumentException("Invalid data for SUITBytes.");
             }
 
             if (hexValue is string hexString)
@@ -61,19 +56,25 @@ namespace SuitSolution.Services
             }
             else
             {
-                throw new ArgumentException("Invalid hex value in JSON data.");
+                throw new ArgumentException("Invalid hex value in data.");
             }
 
+            TreeBranch.Pop();
             return this;
         }
 
-        public Dictionary<string, object> ToJson()
+        public Dictionary<string, object> ToData()
         {
             return new Dictionary<string, object>
             {
                 { "hex", ToHexString(v) }
             };
         }
+
+        public SUITBytes FromSUIT(Dictionary<object, object> suitDict) => FromData(suitDict);
+        public SUITBytes FromJson(Dictionary<string, object> jsonData) => FromJsonData(jsonData);
+        public dynamic ToSUIT() => ToData();
+        public dynamic ToJson() => ToData();
 
         public string ToDebug(string indent)
         {
@@ -82,26 +83,20 @@ namespace SuitSolution.Services
 
         private byte[] FromHexString(string hexString)
         {
-            hexString = hexString.Trim();
-            int numChars = hexString.Length;
-            byte[] bytes = new byte[numChars / 2];
-
-            for (int i = 0; i < numChars; i += 2)
-            {
-                bytes[i / 2] = Convert.ToByte(hexString.Substring(i, 2), 16);
-            }
-
-            return bytes;
+            return Enumerable.Range(0, hexString.Length)
+                             .Where(x => x % 2 == 0)
+                             .Select(x => Convert.ToByte(hexString.Substring(x, 2), 16))
+                             .ToArray();
         }
 
         private string ToHexString(byte[] bytes)
         {
-            StringBuilder hex = new StringBuilder(bytes.Length * 2);
-            foreach (byte b in bytes)
-            {
-                hex.AppendFormat("{0:X2}", b);
-            }
-            return hex.ToString();
+            return BitConverter.ToString(bytes).Replace("-", "");
+        }
+
+        public bool Equals(SUITBytes rhs)
+        {
+            return v.SequenceEqual(rhs.v);
         }
     }
 }

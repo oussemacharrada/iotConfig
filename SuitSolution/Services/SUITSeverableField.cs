@@ -1,44 +1,38 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using PeterO.Cbor;
 using SuitSolution.Interfaces;
 using SuitSolution.Services;
 
-public class SUITSeverableField<T>
+public class SUITSeverableField<T> where T : ISUITConvertible<T>, new()
 {
-    public SUITSeverableField(T v)
+    public T v { get; set; }
+
+    public SUITSeverableField(T value)
     {
-        this.v = v;
+        this.v = value;
     }
 
     public SUITSeverableField()
     {
     }
 
-    public T v { get; set; }
-
     public SUITSeverableField<T> FromSUIT(object data)
     {
-        if (data is Dictionary<string, object> suitDict)
+        if (data is Dictionary<object, object> suitDict)
         {
-            if (typeof(T) == typeof(SUITDigest))
-            {
-                var suitDigest = new SUITDigest();
-                if (suitDict.TryGetValue("json", out var jsonValue) && jsonValue is string json)
-                {
-                    var jsonDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-                    suitDigest.FromJson(jsonDict);
-                    v = (T)(object)suitDigest;
-                }
-                else
-                {
-                    throw new ArgumentException("Invalid 'json' field in SUIT dictionary.");
-                }
-            }
-            else
-            {
-                throw new ArgumentException("Invalid data type for T");
-            }
+            var instance = new T();
+            instance.FromSUIT(suitDict); // Assuming FromJson can handle the dictionary directly
+            v = instance;
+        }
+        else if (data is List<object> suitList)
+        {
+            // Process the list and convert it to a dictionary if needed
+            var suitDictFromList = ConvertListToDictionary(suitList);
+            var instance = new T();
+            instance.FromSUIT(suitDictFromList);
+            v = instance;
         }
         else
         {
@@ -47,46 +41,49 @@ public class SUITSeverableField<T>
         return this;
     }
 
+    private Dictionary<object, object> ConvertListToDictionary(List<object> suitList)
+    {
+        if (suitList.Count % 2 != 0)
+        {
+            throw new ArgumentException("The list should have an even number of elements.");
+        }
+
+        var suitDict = new Dictionary<object, object>();
+        for (int i = 0; i < suitList.Count; i += 2)
+        {
+            if (suitList[i] is string key)
+            {
+                suitDict[key] = suitList[i + 1];
+            }
+            else
+            {
+                throw new ArgumentException("Expected a string key at even indices of the list.");
+            }
+        }
+
+        return suitDict;
+    }
+
 
     public SUITSeverableField<T> FromJson(string data)
     {
-        if (typeof(T) == typeof(SUITDigest))
-        {
-            var suitDigest = JsonConvert.DeserializeObject<SUITDigest>(data);
-            v = (T)(object)suitDigest;
-        }
-        else
-        {
-            throw new ArgumentException("Invalid JSON data");
-        }
+        v = JsonConvert.DeserializeObject<T>(data);
         return this;
     }
 
     public string ToJson()
     {
-        if (v is ISUITConvertible<T> convertible)
-        {
-            return JsonConvert.SerializeObject(convertible);
-        }
-        else
-        {
-            throw new InvalidOperationException("Invalid data type for T");
-        }
+        return JsonConvert.SerializeObject(v);
     }
 
-    public Dictionary<string, object> ToSUIT()
+    public byte[] ToSUIT()
     {
-        if (v is ISUITConvertible<T> convertible)
-        {
-            var suitDict = new Dictionary<string, object>
-            {
-                ["json"] = convertible.ToJson()
-            };
-            return suitDict;
-        }
-        else
-        {
-            throw new InvalidOperationException("Invalid data type for T");
-        }
+        var cborObject = v.ToSUIT();
+        var cbor = CBORObject.FromObject(cborObject);
+        byte[] cborBytes = cbor.EncodeToBytes();
+        TreeBranch.Pop();
+        return cborBytes;
     }
+
+
 }

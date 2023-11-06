@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 using SuitSolution.Interfaces;
+using SuitSolution.Services;
 
 public class SUITText : SUITManifestDict, ISUITConvertible<SUITText>
 {
@@ -30,7 +31,7 @@ public class SUITText : SUITManifestDict, ISUITConvertible<SUITText>
 
     public Dictionary<SUITComponentId, SUITComponentText> components { get; set; }
 
-    public SUITText FromSUIT(Dictionary<string, object> suitDict)
+    public SUITText FromSUIT(Dictionary<object, object> suitDict)
     {
         if (suitDict == null)
         {
@@ -63,14 +64,14 @@ public class SUITText : SUITManifestDict, ISUITConvertible<SUITText>
             components = new Dictionary<SUITComponentId, SUITComponentText>();
             foreach (var componentObj in componentsList)
             {
-                if (componentObj is Dictionary<string, object> componentDict)
+                if (componentObj is Dictionary<object, object> componentDict)
                 {
-                    if (componentDict.TryGetValue("component_id", out var componentIdObj) && componentIdObj is Dictionary<string, object> componentIdDict)
+                    if (componentDict.TryGetValue("component_id", out var componentIdObj) && componentIdObj is Dictionary<object, object> componentIdDict)
                     {
                         var componentId = new SUITComponentId();
                         componentId.FromSUIT(componentIdDict);
 
-                        if (componentDict.TryGetValue("component_text", out var componentTextObj) && componentTextObj is Dictionary<string, object> componentTextDict)
+                        if (componentDict.TryGetValue("component_text", out var componentTextObj) && componentTextObj is Dictionary<object, object> componentTextDict)
                         {
                             var componentText = new SUITComponentText();
                             componentText.FromSUIT(componentTextDict);
@@ -120,12 +121,12 @@ public class SUITText : SUITManifestDict, ISUITConvertible<SUITText>
             {
                 if (componentObj is Dictionary<string, object> componentDict)
                 {
-                    if (componentDict.TryGetValue("component_id", out var componentIdObj) && componentIdObj is Dictionary<string, object> componentIdDict)
+                    if (componentDict.TryGetValue("component_id", out var componentIdObj) && componentIdObj is Dictionary<object, object> componentIdDict)
                     {
                         var componentId = new SUITComponentId();
                         componentId.FromSUIT(componentIdDict);
 
-                        if (componentDict.TryGetValue("component_text", out var componentTextObj) && componentTextObj is Dictionary<string, object> componentTextDict)
+                        if (componentDict.TryGetValue("component_text", out var componentTextObj) && componentTextObj is Dictionary<object, object> componentTextDict)
                         {
                             var componentText = new SUITComponentText();
                             componentText.FromSUIT(componentTextDict);
@@ -145,7 +146,7 @@ public class SUITText : SUITManifestDict, ISUITConvertible<SUITText>
 
         foreach (var kvp in components)
         {
-            var keyList = kvp.Key.ToSUIT().Select(k => k.ToString()).ToList();
+            var keyList = kvp.Key.ToSUIT().Select(new Func<object, object>(k => k.ToString())).ToList();
             string selectedKey = null;
 
             foreach (var key in keyList)
@@ -184,7 +185,12 @@ public class SUITText : SUITManifestDict, ISUITConvertible<SUITText>
         return suitList;
     }
 
-    public new Dictionary<string, object> ToJson()
+    public dynamic ToJson()
+    {
+        throw new NotImplementedException();
+    }
+
+    public new dynamic sToJson()
     {
         var jsonData = new Dictionary<string, object>();
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SuitSolution.Interfaces;
 using SuitSolution.Services;
 
 namespace SuitSolution.Services
@@ -29,56 +30,89 @@ namespace SuitSolution.Services
         }
     }
 
+    public class SUITReportingPolicy : SUITPosInt
+    {
+        public int DefaultPolicy { get; private set; }
 
-
-            public class SUITReportingPolicy : SUITPosInt
-            {
-                public int default_policy { get; }
-
-                public SUITReportingPolicy(int policy)
-                {
-                    default_policy = policy;
-                }
-
-                public  Dictionary<string, object> ToSUIT()
-                {
-                    return new Dictionary<string, object>
-                    {
-                        { "policy", default_policy }
-                    };
-                }
-            }
-
-        public class SUITReportingPolicyCommand : SUITCommand
+        public SUITReportingPolicy(int policy)
         {
-            public string JsonKey { get; }
-            public string SuitKey { get; }
-            public List<string> DepParams { get; }
+            DefaultPolicy = policy;
+        }
 
-            public SUITReportingPolicyCommand(string jsonKey, string suitKey, List<string> depParams)
+        public SUITReportingPolicy()
+        {
+        }
+
+        public static SUITReportingPolicy Create(int policy)
+        {
+            return new SUITReportingPolicy(policy);
+        }
+
+        public new SUITReportingPolicy FromSUIT(Dictionary<object, object> suitDict)
+        {
+            if (suitDict == null)
             {
-                JsonKey = jsonKey;
-                SuitKey = suitKey;
-                DepParams = depParams;
+                throw new ArgumentNullException(nameof(suitDict));
             }
 
-            public  List<object> ToSUIT()
+            if (suitDict.TryGetValue("policy", out var policyValue) && policyValue is int policy)
             {
-                var suitDict = new Dictionary<string, object>
-                {
-                    { "command-id", JsonKey },
-                    { "command-arg", new SUITReportingPolicy(0).ToSUIT() }, 
-                    { "component-id", SUITCommonInfo.CurrentIndex }
-                };
+                DefaultPolicy = policy;
+            }
+            else
+            {
+                throw new ArgumentException("The 'policy' key is missing or is not an integer in the SUIT dictionary.");
+            }
 
-                if (DepParams != null && DepParams.Any())
-                {
-                    suitDict.Add("dep-params", DepParams);
-                }
+            return this;
+        }
 
-                return new List<object> { suitDict };
+        public new SUITReportingPolicy FromJson(Dictionary<string, object> jsonData)
+        {
+            if (jsonData == null)
+            {
+                throw new ArgumentNullException(nameof(jsonData));
+            }
+
+            if (jsonData.TryGetValue("policy", out var policyValue) && policyValue is int policy)
+            {
+                DefaultPolicy = policy;
+            }
+            else
+            {
+                throw new ArgumentException("The 'policy' key is missing or is not an integer in the JSON data.");
+            }
+
+            return this;
+        }
+
+        public Dictionary<string, object> ToSUIT()
+        {
+            return new Dictionary<string, object>
+            {
+                { "policy", DefaultPolicy }
+            };
+        }
+
+        public dynamic ToJson()
+        {
+            return new Dictionary<string, object>
+            {
+                { "policy", DefaultPolicy }
+            };
+        }
+
+        public new SUITReportingPolicy FromJson(string j)
+        {
+            if (int.TryParse(j, out var policy))
+            {
+                DefaultPolicy = policy;
+                return this;
+            }
+            else
+            {
+                throw new ArgumentException("The input string is not a valid integer.");
             }
         }
-    
-
+    }
 }

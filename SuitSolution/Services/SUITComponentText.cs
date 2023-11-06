@@ -1,64 +1,49 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
 
-public class SUITComponentText : SUITManifestDict
+namespace SuitSolution.Services
 {
-    public SUITComponentText()
+    public class SUITComponentText : SUITManifestDict
     {
-        InitializeFields();
-    }
+        public SUITTStr VendorName { get; set; } = new SUITTStr();
+        public SUITTStr ModelName { get; set; } = new SUITTStr();
+        public SUITTStr VendorDomain { get; set; } = new SUITTStr();
+        public SUITTStr ModelInfo { get; set; } = new SUITTStr();
+        public SUITTStr ComponentDescription { get; set; } = new SUITTStr();
+        public SUITTStr Version { get; set; } = new SUITTStr();
+        public SUITTStr RequiredVersion { get; set; } = new SUITTStr();
 
-    private void InitializeFields()
-    {
-        // Initialize fields here.
-        VendorName = new SUITTStr();
-        ModelName = new SUITTStr();
-        VendorDomain = new SUITTStr();
-        ModelInfo = new SUITTStr();
-        ComponentDescription = new SUITTStr();
-        Version = new SUITTStr();
-        RequiredVersion = new SUITTStr();
-    }
-
-    public SUITTStr VendorName { get; set; }
-    public SUITTStr ModelName { get; set; }
-    public SUITTStr VendorDomain { get; set; }
-    public SUITTStr ModelInfo { get; set; }
-    public SUITTStr ComponentDescription { get; set; }
-    public SUITTStr Version { get; set; }
-    public SUITTStr RequiredVersion { get; set; }
-
-    public Dictionary<string, object> ToSUIT()
-    {
-        var suitDict = new Dictionary<string, object>();
-
-        suitDict["vendor-name"] = VendorName.ToSUIT();
-        suitDict["model-name"] = ModelName.ToSUIT();
-        suitDict["vendor-domain"] = VendorDomain.ToSUIT();
-        suitDict["json-source"] = ModelInfo.ToSUIT();
-        suitDict["component-description"] = ComponentDescription.ToSUIT();
-        suitDict["version"] = Version.ToSUIT();
-        suitDict["required-version"] = RequiredVersion.ToSUIT();
-
-        return suitDict;
-    }
-    public static Dictionary<string, object> ToSUITDictionary(Dictionary<SUITComponentId, SUITComponentText> inputDictionary)
-    {
-        var suitDict = new Dictionary<string, object>();
-
-        foreach (var kvp in inputDictionary)
+        public Dictionary<string, object> ToSUIT()
         {
-            var suitKey = kvp.Key.ToSUIT(); // Assuming SUITComponentId has a ToSUIT method
-            var suitValue = kvp.Value.ToSUIT(); // Assuming SUITComponentText has a ToSUIT method
-
-            suitDict[suitKey.ToString()] = suitValue;
+            return new Dictionary<string, object>
+            {
+                ["vendor-name"] = VendorName.ToSUIT(),
+                ["model-name"] = ModelName.ToSUIT(),
+                ["vendor-domain"] = VendorDomain.ToSUIT(),
+                ["json-source"] = ModelInfo.ToSUIT(),
+                ["component-description"] = ComponentDescription.ToSUIT(),
+                ["version"] = Version.ToSUIT(),
+                ["required-version"] = RequiredVersion.ToSUIT()
+            };
         }
 
-        return suitDict;
+        public static Dictionary<string, object> ToSUITDictionary(Dictionary<SUITComponentId, SUITComponentText> inputDictionary)
+        {
+            var suitDict = new Dictionary<string, object>();
+
+            foreach (var kvp in inputDictionary)
+            {
+                var suitKey = kvp.Key.ToSUIT(); // Assuming SUITComponentId has a ToSUIT method
+                var suitValue = kvp.Value.ToSUIT(); // Using the ToSUIT method from this class
+
+                suitDict[suitKey.ToString()] = suitValue;
+            }
+
+            return suitDict;
+        }
     }
 }
-
 
 public static class StringExtensions
 {

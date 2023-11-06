@@ -1,58 +1,95 @@
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using SuitSolution.Interfaces;
-    using SuitSolution.Services;
+using System;
+using System.Collections.Generic;
+using SuitSolution.Interfaces;
+using SuitSolution.Services;
 
-    public class SUITParameters : SUITManifestDict
+public class SUITParameters : SUITManifestDict,ISUITConvertible<SUITParameters>
+{
+    public SUITUUID VendorId { get; set; }
+    public SUITUUID ClassId { get; set; }
+    public SUITBWrapField<SUITDigest> Digest { get; set; }
+    public SUITPosInt Size { get; set; }
+    public SUITTStr Uri { get; set; }
+    public SUITComponentIndex Src { get; set; }
+    public SUITCompressionInfo Compress { get; set; }
+    public SUITPosInt Offset { get; set; }
+
+    public SUITParameters()
     {
-        public SUITUUID VendorId { get; set; }
-        public SUITUUID ClassId { get; set; }
-        public SUITBWrapField<SUITDigest> Digest { get; set; }
-        public SUITPosInt Size { get; set; }
-        public SUITTStr Uri { get; set; }
-        public SUITComponentIndex Src { get; set; }
-        public SUITCompressionInfo Compress { get; set; }
-        public SUITPosInt Offset { get; set; }
+        VendorId = new SUITUUID();
+        ClassId = new SUITUUID();
+        Digest = new SUITBWrapField<SUITDigest>();
+        Size = new SUITPosInt();
+        Uri = new SUITTStr();
+        Src = new SUITComponentIndex();
+        Compress = new SUITCompressionInfo();
+        Offset = new SUITPosInt();
+    }
 
-        public SUITParameters()
+     public SUITParameters FromSUIT(Dictionary<object, object> suitDict)
+    {
+        if (suitDict == null)
+            throw new ArgumentNullException(nameof(suitDict));
+
+
+        return this;
+    }
+
+    public SUITParameters FromJson(Dictionary<string, object> jsonData)
+    {
+        if (jsonData == null)
+            throw new ArgumentNullException(nameof(jsonData));
+
+        // Assuming each property has a corresponding key in the jsonData
+
+        return this;
+    }
+
+   
+
+    public dynamic ToJson()
+    {
+        var jsonDict = new Dictionary<string, object>
         {
-            VendorId = new SUITUUID();
-            ClassId = new SUITUUID();
-            Digest = new SUITBWrapField<SUITDigest>();
-            Size = new SUITPosInt();
-            Uri = new SUITTStr();
-            Src = new SUITComponentIndex();
-            Compress = new SUITCompressionInfo();
-            Offset = new SUITPosInt();
-        }
-        public new Dictionary<string , object>ToSUIT()
-        {
-            var suitDict = base.ToSUIT();
+            ["vendor-id"] = VendorId.ToJson(),
+            ["class-id"] = ClassId.ToJson(),
+            ["digest"] = Digest.ToJson(),
+            ["size"] = Size.ToJson(),
+            ["uri"] = Uri.ToJson(),
+            ["src"] = Src.ToJson(),
+            ["compress"] = Compress.ToJson(),
+            ["offset"] = Offset.ToJson()
+        };
 
-            
-            suitDict["vendor-id"] = VendorId.ToSUIT();
-            suitDict["class-id"] = ClassId.ToSUIT();
-            suitDict["digest"] = Digest.ToSUIT();
-            suitDict["size"] = Size.ToSUIT();
-            suitDict["uri"] = Uri.ToSUIT();
-            suitDict["src"] = Src.ToSUIT();
-            suitDict["compress"] = Compress.ToSUIT();
-            suitDict["offset"] = Offset.ToSUIT();
+        return jsonDict;
+    }
 
-            return suitDict;
-        }   
+    public new Dictionary<string, object> ToSUIT()
+    {
+        var suitDict = base.ToSUIT();
+        suitDict["vendor-id"] = VendorId.ToSUIT();
+        suitDict["class-id"] = ClassId.ToSUIT();
+        suitDict["digest"] = Digest.ToSUIT();
+        suitDict["size"] = Size.ToSUIT();
+        suitDict["uri"] = Uri.ToSUIT();
+        suitDict["src"] = Src.ToSUIT();
+        suitDict["compress"] = Compress.ToSUIT();
+        suitDict["offset"] = Offset.ToSUIT();
+        return suitDict;
+    }
 
-        public void FromSUIT(object suitData)
+   
+
+    public void FromSUIT(object suitData)
         {
             if (suitData is List<object> suitList)
             {
                 foreach (var fieldInfo in fields.Values)
                 {
-                    var fieldName = fieldInfo.json_key;
-                    var suitKey = fieldInfo.suit_key;
+                    var fieldName = fieldInfo.JsonKey;
+                    var suitKey = fieldInfo.SuitKey;
 
-                    if (suitList.Count > 0 && suitList[0] is Dictionary<string, object> suitDict && suitDict.ContainsKey(suitKey))
+                    if (suitList.Count > 0 && suitList[0] is Dictionary<object, object> suitDict && suitDict.ContainsKey(suitKey))
                     {
                         var suitValue = suitDict[suitKey];
                         if (suitValue != null)
@@ -70,12 +107,12 @@
                     }
                 }
             }
-            else if (suitData is Dictionary<string, object> suitDict)
+            else if (suitData is Dictionary<object, object> suitDict)
             {
                 foreach (var fieldInfo in fields.Values)
                 {
-                    var fieldName = fieldInfo.json_key;
-                    var suitKey = fieldInfo.suit_key;
+                    var fieldName = fieldInfo.JsonKey;
+                    var suitKey = fieldInfo.SuitKey;
 
                     if (suitDict.ContainsKey(suitKey))
                     {

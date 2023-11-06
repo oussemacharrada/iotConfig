@@ -3,113 +3,70 @@ using System.Collections.Generic;
 using System.Linq;
 using SuitSolution.Interfaces;
 
-public class SUITManifestArray<T> where T : new()
+public class SUITManifestArray<T> where T : ISUITConvertible<T>, new()
 {
-    public readonly string one_indent = "    ";
-
-    public List<T> items;
+    private const string OneIndent = "    ";
+    public List<T> Items { get; set; }
 
     public SUITManifestArray()
     {
-        items = new List<T>();
+        Items = new List<T>();
     }
 
     public bool Equals(SUITManifestArray<T> rhs)
     {
-        if (!GetType().Equals(rhs.GetType()))
-            return false;
-
-        if (items.Count != rhs.items.Count)
-            return false;
-
-        for (int i = 0; i < items.Count; i++)
-        {
-            if (!items[i].Equals(rhs.items[i]))
-                return false;
-        }
-
-        return true;
+        return GetType().Equals(rhs.GetType()) &&
+               Items.Count == rhs.Items.Count &&
+               !Items.Where((t, i) => !t.Equals(rhs.Items[i])).Any();
     }
 
     public SUITManifestArray<T> FromJson(List<object> data)
     {
-        items = new List<T>();
-
-        foreach (var d in data)
+        Items = data.Select(d => 
         {
-            var dict = d as Dictionary<string, object>;
-            if (dict != null)
-            {
-                var item = new T();
-                (item as ISUITConvertible<T>)?.FromJson(dict);
-                items.Add(item);
-            }
-        }
-
+            var item = new T();
+            item.FromJson((Dictionary<string, object>)d);
+            return item;
+        }).ToList();
+    
         return this;
     }
 
-    public List<object> ToJson()
+    public dynamic ToJson()
     {
-        var jsonList = new List<object>();
-
-        foreach (var item in items)
-        {
-            var suitConvertible = item as ISUITConvertible<T>;
-            if (suitConvertible != null)
-            {
-                jsonList.Add(suitConvertible.ToJson());
-            }
-        }
-
-        return jsonList;
+        return Items.Select(item => item.ToJson()).ToList();
     }
 
     public SUITManifestArray<T> FromSUIT(List<object> data)
     {
-        items = new List<T>();
-
-        foreach (var d in data)
+        TreeBranch.Append(typeof(SUITManifestArray<T>).FullName);
+        Items = data.Select(d => 
         {
-            var dict = d as Dictionary<string, object>;
-            if (dict != null)
-            {
-                var item = new T();
-                (item as ISUITConvertible<T>)?.FromSUIT(dict);
-                items.Add(item);
-            }
-        }
+            TreeBranch.Append(Items.Count.ToString());
+            var item = new T();
+            item.FromSUIT((Dictionary<object, object>)d);
+            TreeBranch.Pop();
+            return item;
+        }).ToList();
+        TreeBranch.Pop();
 
         return this;
     }
 
-    public List<Dictionary<string, object>> ToSuit()
+    public List<object> ToSuit()
     {
-        var suitList = new List<Dictionary<string, object>>();
-
-        foreach (var item in items)
-        {
-            var suitConvertible = item as ISUITConvertible<T>;
-            if (suitConvertible != null)
-            {
-                suitList.Add(suitConvertible.ToSUIT());
-            }
-        }
-
-        return suitList;
+        return Items.Select(item => item.ToSUIT()).ToList();
     }
 
-
-    public void append(T element)
+    public void Append(T element)
     {
-        items.Add(element);
+        Items.Add(element);
     }
 
-    public string to_debug(string indent)
+    public string ToDebug(string indent)
     {
-        var newIndent = indent + one_indent;
-        var debugList = items.Select(item => $"{newIndent}{(item as ISUITConvertible<T>)?.ToDebug(newIndent)}").ToList();
-        var s = $"[\n{string.Join(",\n", debugList)}\n{indent}]";
-        return s;
+        var newIndent = indent + OneIndent;
+        var debugList = Items.Select(item => $"{newIndent}{item.ToDebug(newIndent)}").ToList();
+        return $"[\n{string.Join(",\n", debugList)}\n{indent}]";
     }
 }
