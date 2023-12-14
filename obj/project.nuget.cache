@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "FwRJsBEeoWSNzkNuskqnyj4+L427D3qqbwmkEWBkac0+Z8DC8mvZDP68lnorRBT3wF2PqPyXOpYBj0uLfMt7XA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\ousama.charada\\RiderProjects\\SuitManifestSolution\\SuitManifestSolution\\SuitManifestSolution.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\ousama.charada\\.nuget\\packages\\bouncycastle.netcore\\2.2.1\\bouncycastle.netcore.2.2.1.nupkg.sha512",
+    "C:\\Users\\ousama.charada\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
+    "C:\\Users\\ousama.charada\\.nuget\\packages\\petero.cbor\\4.5.3\\petero.cbor.4.5.3.nupkg.sha512",
+    "C:\\Users\\ousama.charada\\.nuget\\packages\\petero.numbers\\1.8.2\\petero.numbers.1.8.2.nupkg.sha512",
+    "C:\\Users\\ousama.charada\\.nuget\\packages\\petero.uriutility\\1.0.0\\petero.uriutility.1.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
